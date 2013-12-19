@@ -1398,7 +1398,7 @@ void AddSC_Professions_NPC
 void AddSC_arena_top_teams
 #endif
 
-void AddCustomScripts();
+void AddCustomScripts()
 
 {
 #ifdef SCRIPTS
