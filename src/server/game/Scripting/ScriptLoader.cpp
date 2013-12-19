@@ -1397,10 +1397,12 @@ void AddBattlegroundScripts()
 void AddSC_Professions_NPC
 #endif
 
-void AddCustomScripts()
+void AddCustomScripts();
+void AddSC_arena_top_teams();
 {
 #ifdef SCRIPTS
     /* This is where custom scripts should be added. */
 AddSC_Professions_NPC
+AddSC_arena_top_teams
 #endif
 }
