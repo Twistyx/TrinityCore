@@ -1395,10 +1395,11 @@ void AddBattlegroundScripts()
 #ifdef SCRIPTS
 /* This is where custom scripts' loading functions should be declared. */
 void AddSC_Professions_NPC
+void AddSC_arena_top_teams
 #endif
 
 void AddCustomScripts();
-void AddSC_arena_top_teams();
+
 {
 #ifdef SCRIPTS
     /* This is where custom scripts should be added. */
