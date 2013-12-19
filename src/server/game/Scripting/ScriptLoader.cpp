@@ -1394,8 +1394,9 @@ void AddBattlegroundScripts()
 
 #ifdef SCRIPTS
 /* This is where custom scripts' loading functions should be declared. */
-void AddSC_Professions_NPC
-void AddSC_arena_top_teams
+void AddSC_Professions_NPC();
+void AddSC_arena_top_teams();
+void AddSC_npc_hunterpetvendor();
 #endif
 
 void AddCustomScripts()
@@ -1403,7 +1404,8 @@ void AddCustomScripts()
 {
 #ifdef SCRIPTS
     /* This is where custom scripts should be added. */
-AddSC_Professions_NPC
-AddSC_arena_top_teams
+AddSC_Professions_NPC();
+AddSC_arena_top_teams();
+AddSC_npc_hunterpetvendor();
 #endif
 }
