@@ -629,3 +629,10 @@
             }
     };
 
+
+void AddSC_npc_suffixvendor()
+{
+        new npc_suffixvendor();
+}
+
+
