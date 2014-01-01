@@ -1400,6 +1400,7 @@ void AddSC_npc_hunterpetvendor();
 void AddSC_npc_changer();
 void AddSC_npc_suffixvendor();
 void AddSC_npc_arena_spectator();
+void AddSC_enchanter();
 #endif
 
 void AddCustomScripts()
@@ -1413,5 +1414,6 @@ AddSC_npc_hunterpetvendor();
 AddSC_npc_changer();
 AddSC_npc_suffixvendor();
 AddSC_npc_arena_spectator();
+AddSC_enchanter();
 #endif
 }
