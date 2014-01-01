@@ -1397,7 +1397,6 @@ void AddBattlegroundScripts()
 void AddSC_Professions_NPC();
 void AddSC_arena_top_teams();
 void AddSC_npc_hunterpetvendor();
-void AddSC_Duel_Reset();
 void AddSC_npc_changer();
 #endif
 
@@ -1409,7 +1408,6 @@ void AddCustomScripts()
 AddSC_Professions_NPC();
 AddSC_arena_top_teams();
 AddSC_npc_hunterpetvendor();
-AddSC_Duel_Reset();
 AddSC_npc_changer();
 #endif
 }
