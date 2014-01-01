@@ -1398,6 +1398,7 @@ void AddSC_Professions_NPC();
 void AddSC_arena_top_teams();
 void AddSC_npc_hunterpetvendor();
 void AddSC_npc_changer();
+void AddSC_npc_suffixvendor();
 #endif
 
 void AddCustomScripts()
@@ -1409,5 +1410,6 @@ AddSC_Professions_NPC();
 AddSC_arena_top_teams();
 AddSC_npc_hunterpetvendor();
 AddSC_npc_changer();
+AddSC_npc_suffixvendor();
 #endif
 }
