@@ -13,7 +13,6 @@ set(scripts_STAT_SRCS
   Custom/Professions_NPC.cpp
   Custom/arena_top_teams.cpp
   Custom/npc_hunterpetvendor.cpp
-  Custom/Duel_Reset.cpp
   Custom/npc_changer.cpp
 )
 
