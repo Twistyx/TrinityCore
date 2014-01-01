@@ -1399,6 +1399,7 @@ void AddSC_arena_top_teams();
 void AddSC_npc_hunterpetvendor();
 void AddSC_npc_changer();
 void AddSC_npc_suffixvendor();
+void AddSC_npc_arena_spectator();
 #endif
 
 void AddCustomScripts()
@@ -1411,5 +1412,6 @@ AddSC_arena_top_teams();
 AddSC_npc_hunterpetvendor();
 AddSC_npc_changer();
 AddSC_npc_suffixvendor();
+AddSC_npc_arena_spectator();
 #endif
 }
