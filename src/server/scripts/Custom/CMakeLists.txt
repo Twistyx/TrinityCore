@@ -14,6 +14,7 @@ set(scripts_STAT_SRCS
   Custom/arena_top_teams.cpp
   Custom/npc_hunterpetvendor.cpp
   Custom/npc_changer.cpp
+  Custom/npc_suffixvendor.cpp
 )
 
 message("  -> Prepared: Custom")
