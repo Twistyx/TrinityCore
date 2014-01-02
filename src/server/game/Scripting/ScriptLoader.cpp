@@ -1408,12 +1408,12 @@ void AddCustomScripts()
 {
 #ifdef SCRIPTS
     /* This is where custom scripts should be added. */
-AddSC_Professions_NPC();
-AddSC_arena_top_teams();
-AddSC_npc_hunterpetvendor();
-AddSC_npc_changer();
-AddSC_npc_suffixvendor();
-AddSC_npc_arena_spectator();
-AddSC_enchanter();
+    AddSC_Professions_NPC();
+    AddSC_arena_top_teams();
+    AddSC_npc_hunterpetvendor();
+    AddSC_npc_changer();
+    AddSC_npc_suffixvendor();
+    AddSC_npc_arena_spectator();
+    AddSC_enchanter();
 #endif
 }
