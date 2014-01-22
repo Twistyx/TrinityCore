@@ -15,6 +15,9 @@
  * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
+
+#include "ScriptMgr.h"
+#include "Chat.h"
 #include "ScriptLoader.h"
 
 //examples
@@ -40,7 +43,6 @@ void AddSC_quest_spell_scripts();
 void AddSC_item_spell_scripts();
 void AddSC_example_spell_scripts();
 void AddSC_holiday_spell_scripts();
-
 void AddSC_SmartSCripts();
 
 //Commands
@@ -676,7 +678,18 @@ void AddSC_outdoorpvp_zm();
 // player
 void AddSC_chat_log();
 
+// customs
+/* This is where custom scripts' loading functions should be declared. */
+void AddSC_Professions_NPC();
+void AddSC_arena_top_teams();
+void AddSC_npc_hunterpetvendor();
+void AddSC_npc_changer();
+void AddSC_npc_suffixvendor();
+//void AddSC_npc_arena_spectator();
+void AddSC_enchanter();
+
 #endif
+
 
 void AddScripts()
 {
@@ -1392,28 +1405,17 @@ void AddBattlegroundScripts()
 #endif
 }
 
-#ifdef SCRIPTS
-/* This is where custom scripts' loading functions should be declared. */
-void AddSC_Professions_NPC();
-void AddSC_arena_top_teams();
-void AddSC_npc_hunterpetvendor();
-void AddSC_npc_changer();
-void AddSC_npc_suffixvendor();
-void AddSC_npc_arena_spectator();
-void AddSC_enchanter();
-#endif
-
 void AddCustomScripts()
-
 {
 #ifdef SCRIPTS
-    /* This is where custom scripts should be added. */
-    AddSC_Professions_NPC();
-    AddSC_arena_top_teams();
-    AddSC_npc_hunterpetvendor();
-    AddSC_npc_changer();
-    AddSC_npc_suffixvendor();
-    AddSC_npc_arena_spectator();
-    AddSC_enchanter();
+/* This is where custom scripts' loading functions should be declared. */
+	AddSC_Professions_NPC();
+	AddSC_arena_top_teams();
+	AddSC_npc_hunterpetvendor();
+	AddSC_npc_changer();
+	AddSC_npc_suffixvendor();
+//	AddSC_npc_arena_spectator();
+	AddSC_enchanter();
 #endif
 }
+

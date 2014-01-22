@@ -71,7 +71,7 @@ public:
         if (argstr == "off")
         {
             handler->GetSession()->GetPlayer()->SetCommandStatusOff(CHEAT_GOD);
-            handler->SendSysMessage("Godmode is OFF. You can take damage.");
+            handler->SendSysMessage("Godmode is OFF. You can take damage. Be carefull :)");
             return true;
         }
         else if (argstr == "on")

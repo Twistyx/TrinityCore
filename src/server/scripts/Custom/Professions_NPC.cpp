@@ -58,21 +58,23 @@ public:
  
     bool LearnAllRecipesInProfession(Player* pPlayer, SkillType skill)
     {
-        const char* skill_name;
-        SkillLineEntry const *SkillInfo = sSkillLineStore.LookupEntry(skill);
-        skill_name = SkillInfo->name[ChatHandler(pPlayer).GetSessionDbcLocale()];
- 
-        if (!SkillInfo)
-        {
-            sLog->outError(LOG_FILTER_PLAYER_SKILLS, "Profession NPC: received non-valid skill ID (LearnAllRecipesInProfession)");
-            return false;
-        }      
- 
-        LearnSkillRecipesHelper(pPlayer, SkillInfo->id);
- 
-        pPlayer->SetSkill(SkillInfo->id, pPlayer->GetSkillStep(SkillInfo->id), 450, 450);
-        ChatHandler(pPlayer).PSendSysMessage(LANG_COMMAND_LEARN_ALL_RECIPES, skill_name);
- 
+      //  const char* skill_name;
+      //  SkillLineEntry const *SkillInfo = sSkillLineStore.LookupEntry(skill);
+      //  skill_name = SkillInfo->name[ChatHandler(pPlayer).GetSessionDbcLocale()];
+ //
+      //  if (!SkillInfo)
+      //  {
+      //      sLog->outError(LOG_FILTER_PLAYER_SKILLS, "Profession NPC: received non-valid skill ID (LearnAllRecipesInProfession)");
+      //      return false;
+      //  }      
+ //
+      //  LearnSkillRecipesHelper(pPlayer, SkillInfo->id);
+ //
+      //  pPlayer->SetSkill(SkillInfo->id, pPlayer->GetSkillStep(SkillInfo->id), 450, 450);
+      //  ChatHandler(pPlayer).PSendSysMessage(LANG_COMMAND_LEARN_ALL_RECIPES, skill_name);
+ //
+//ERROR:Professions_NPC.cpp: In member function ‘bool Professions_NPC::LearnAllRecipesInProfession(Player*, SkillType)’:
+//ERROR:Professions_NPC.cpp:63:57: error: no matching function for call to ‘ChatHandler::ChatHandler(Player*&)’
         return true;
     }
  

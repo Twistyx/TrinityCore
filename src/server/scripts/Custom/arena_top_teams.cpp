@@ -9,13 +9,13 @@
  
 enum enus
 {
-        ARENA_MAX_RESULTS = 10,
-    ARENA_2V2_LADDER = GOSSIP_ACTION_INFO_DEF + 1,
-    ARENA_3V3_LADDER = GOSSIP_ACTION_INFO_DEF + 2,
-    ARENA_5V5_LADDER = GOSSIP_ACTION_INFO_DEF + 3,
-    ARENA_GOODBYE = GOSSIP_ACTION_INFO_DEF + 4,
+        ARENA_MAX_RESULTS       = 10,
+        ARENA_2V2_LADDER        = GOSSIP_ACTION_INFO_DEF + 1,
+        ARENA_3V3_LADDER        = GOSSIP_ACTION_INFO_DEF + 2,
+        ARENA_5V5_LADDER        = GOSSIP_ACTION_INFO_DEF + 3,
+        ARENA_GOODBYE           = GOSSIP_ACTION_INFO_DEF + 4,
         ARENA_START_TEAM_LOOKUP = GOSSIP_ACTION_INFO_DEF + 5,
-        ARENA_HELP = GOSSIP_ACTION_INFO_DEF + 9999,
+        ARENA_HELP              = GOSSIP_ACTION_INFO_DEF + 9999,
 };
  
 class arena_top_teams : public CreatureScript
@@ -28,8 +28,7 @@ class arena_top_teams : public CreatureScript
                 {
                         case ARENA_2V2_LADDER:
                                 teamType = 2;
-                        break;
-                                       
+                        break;                                       
                         case ARENA_3V3_LADDER:
                                 teamType = 3;
                         break;
@@ -163,9 +162,9 @@ class arena_top_teams : public CreatureScript
                 if(!player)
                         return "Offline";
                 if(player->isAFK())
-                        return "Online, <AFK> " + player->afkMsg;
+                        return "Online, <AFK> ";
                 if(player->isDND())
-                        return "Online, <Busy> " + player->dndMsg;
+                        return "Online, <Busy> ";
                 return "Online";
         }
        
