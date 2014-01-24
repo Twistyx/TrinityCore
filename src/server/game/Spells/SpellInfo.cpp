@@ -1579,6 +1579,16 @@ SpellCastResult SpellInfo::CheckTarget(Unit const* caster, WorldObject const* ta
             return SPELL_FAILED_TARGET_IS_PLAYER;
         else
             return SPELL_FAILED_BAD_TARGETS;
+            
+             // Check los for Whirlwind and totems 
+	if ((Effects[0].TargetA.GetTarget() == TARGET_SRC_CASTER) && (Effects[0].TargetB.GetTarget() == TARGET_UNIT_SRC_AREA_ENEMY))
+	 if (!caster->IsWithinLOSInMap(target))
+	 return SPELL_FAILED_BAD_TARGETS;
+
+	 // Check this fix for Typhon ..
+	 if (Effects[0].TargetA.GetTarget() == TARGET_UNIT_CONE_ENEMY_104)
+	 if (!caster->IsWithinLOSInMap(target))
+	 return SPELL_FAILED_LINE_OF_SIGHT;
     }
 
     // check GM mode and GM invisibility - only for player casts (npc casts are controlled by AI) and negative spells
