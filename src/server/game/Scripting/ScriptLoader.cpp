@@ -688,6 +688,7 @@ void AddSC_npc_suffixvendor();
 //void AddSC_npc_arena_spectator();
 void AddSC_enchanter();
 void AddSC_TitleNpc();
+void AddSC_Npc_Beastmaster();
 
 #endif
 
@@ -1418,6 +1419,7 @@ void AddCustomScripts()
 //	AddSC_npc_arena_spectator();
 	AddSC_enchanter();
 	AddSC_TitleNpc();
+	AddSC_Npc_Beastmaster();
 #endif
 }
 
