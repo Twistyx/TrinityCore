@@ -19,6 +19,7 @@ set(scripts_STAT_SRCS
   Custom/npc_arena_spectator.cpp
   Custom/enchanter.cpp
   Custom/npc_title.cpp
+  Custom/Npc_Beastmaster.cpp
 )
 
 message("  -> Prepared: Custom")
