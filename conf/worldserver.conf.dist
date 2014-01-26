@@ -501,7 +501,7 @@ ChatLogs.BattleGround = 0
 #                     16 - (FFA_PVP, Free for all pvp mode like arena PvP in all zones except rest
 #                          activated places and sanctuaries)
 
-GameType = 1
+GameType = 0
 
 #
 #    RealmZone
@@ -689,7 +689,7 @@ CharacterCreating.Disabled.RaceMask = 0
 #                     256  - (Disabled, Warlock)
 #                     1024 - (Disabled, Druid)
 
-CharacterCreating.Disabled.ClassMask = 32
+CharacterCreating.Disabled.ClassMask = 0
 
 #
 #    CharactersPerAccount
@@ -732,7 +732,7 @@ CharacterCreating.MinLevelForHeroicCharacter = 55
 #                     1 - (Show intro only for first character of selected race)
 #                     2 - (Disable intro for all classes)
 
-SkipCinematics = 2
+SkipCinematics = 0
 
 #
 #    MaxPlayerLevel
@@ -741,14 +741,14 @@ SkipCinematics = 2
 #        Range:       1-255
 #        Default:     80
 
-MaxPlayerLevel = 19
+MaxPlayerLevel = 80
 
 #
 #    MinDualSpecLevel
 #        Description: Level requirement for Dual Talent Specialization
 #        Default:     40
 
-MinDualSpecLevel = 19
+MinDualSpecLevel = 40
 
 #
 #    StartPlayerLevel
@@ -779,7 +779,7 @@ StartPlayerMoney = 0
 #        Description: Maximum honor points a character can have.
 #        Default:     75000
 
-MaxHonorPoints = 150000
+MaxHonorPoints = 75000
 
 #
 #    StartHonorPoints
@@ -793,7 +793,7 @@ StartHonorPoints = 0
 #        Description: Maximum arena points a character can have.
 #        Default:     10000
 
-MaxArenaPoints = 25000
+MaxArenaPoints = 10000
 
 #
 #    StartArenaPoints
@@ -861,7 +861,7 @@ AlwaysMaxSkillForLevel = 0
 #        Default:     1 - (Enabled)
 #                     0 - (Disabled)
 
-ActivateWeather = 0
+ActivateWeather = 1
 
 #
 #    CastUnstuck
@@ -1021,7 +1021,7 @@ MaxRecruitAFriendBonusDistance = 100
 #        Description: Time (in seconds) mail delivery is delayed when sending items.
 #        Default:     3600 - (1 hour)
 
-MailDeliveryDelay = 30
+MailDeliveryDelay = 3600
 
 #
 #    SkillChance.Prospecting
@@ -1079,7 +1079,7 @@ BeepAtStart = 1
 #        Example:     "Welcome to John\'s Server@This server runs on Trinity Core."
 #        Default:     "Welcome to a Trinity Core server."
 
-Motd = "Welcome to Cyclone the new 19 Twink Hub!"
+Motd = "Welcome to a Trinity Core server."
 
 #
 #    Server.LoginInfo
@@ -2117,7 +2117,7 @@ BattleGround.PrematureFinishTimer = 300000
 #        Default:     1800000 - (Enabled, 30 minutes)
 #                     0       - (Disabled, Not recommended)
 
-BattleGround.PremadeGroupWaitForMatch = 180000
+BattleGround.PremadeGroupWaitForMatch = 1800000
 
 #
 #    Battleground.GiveXPForKills
@@ -2498,7 +2498,7 @@ HonorPointsAfterDuel = 0
 #        Default:     0 - (Disabled)
 #                     1 - (Enabled)
 
-AlwaysMaxWeaponSkill = 1
+AlwaysMaxWeaponSkill = 0
 
 #
 #    PvPToken.Enable
@@ -2540,7 +2540,7 @@ PvPToken.ItemCount = 1
 #        Default:     0 - (Disabled)
 #                     1 - (Enabled)
 
-NoResetTalentsCost = 1
+NoResetTalentsCost = 0
 
 #
 #     Guild.AllowMultipleGuildMaster

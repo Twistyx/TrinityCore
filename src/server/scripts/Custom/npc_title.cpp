@@ -156,6 +156,22 @@ public:
 		return (0);
 	}
 
+	//Not used but may be usefull
+	uint32 GetNextTokensRecursive(uint32 nextTitle) {
+		if (nextTitle)
+			return (nextTitle * 12 + GetNextTokensRecursive(nextTitle));
+	}
+
+	uint32 GetNextTokensIterrative(uint32 nextTitle) {
+		uint16 total = 0;
+
+		while (nextTitle) {
+			total += 12 * nextTitle;
+			nextTitle--;
+		}
+		return (total);
+	}
+
 	bool OnGossipHello(Player* Player, Creature* creature)
 	{
 		Player->PlayerTalkClass->ClearMenus();
@@ -170,19 +186,33 @@ public:
 		const uint32		totalTokens = GetTotalTokens(Player);
 		uint32				faction     = (Player->GetTeam() == ALLIANCE) ? 0 : 14;
 		uint8				nextTitle   = 0;
-		static const char	*titlesNames[28] = { "Private", "Corporal", "Sergeant", "Master Sergeant", "Sergeant Major",
-		"Knight", "Knight Lieutenant", "Knight Captain", "Knight Champion", "Lieutenant Commander", "Commander", "Marshal",
-		"Field Marshal", "Grand Marshal", "Scout", "Grunt", "Sergeant", "Senior Sergeant", "First Sergeant", "Stone Guard",
-		"Blood Guard", "Legionnaire", "Centurion", "Champion", "Lieutenant General", "General", "Warlord", "High Warlord" };
+		uint16				reqTokens   = 0;
+		static const char	*titlesNames[28] = { "Private",            "Corporal",
+												 "Sergeant",           "Master Sergeant",
+												 "Sergeant Major",     "Knight",
+												 "Knight Lieutenant",  "Knight Captain",
+												 "Knight Champion",    "Lieutenant Commander",
+												 "Commander",          "Marshal",
+												 "Field Marshal",      "Grand Marshal",
+												 "Scout",              "Grunt",
+												 "Sergeant",           "Senior Sergeant",
+												 "First Sergeant",     "Stone Guard",
+												 "Blood Guard",        "Legionnaire",
+												 "Centurion",          "Champion",
+												 "Lieutenant General", "General",
+												 "Warlord",            "High Warlord" };
 
 		if (uiAction == 6666) {
-			while ((++nextTitle * 12) <= totalTokens && nextTitle < 14) {
+			while ((nextTitle < 14) && (((reqTokens += (1 + nextTitle) * 12)) <= totalTokens)) {
+				nextTitle++;
 				Player->SetTitle(sCharTitlesStore.LookupEntry(nextTitle + faction));
 			}
 			if (nextTitle > 13)
-				ss << "You already are max rank !";
+				ss  << "You already are max rank !";
+			else if (nextTitle < 9)
+				ss  << "Next title : |TInterface/PvPRankBadges/PvPRank0" << 1 + nextTitle << ":20:20|t " << titlesNames[nextTitle + faction] << " in " << reqTokens - totalTokens << " tokens.";
 			else
-				ss << "Next title : " << titlesNames[nextTitle + faction] << " in " << 12 - totalTokens % 12 << " tokens.";
+				ss  << "Next title : |TInterface/PvPRankBadges/PvPRank"  << 1 + nextTitle << ":20:20|t " << titlesNames[nextTitle + faction] << " in " << reqTokens - totalTokens << " tokens.";
 			Player->PlayerTalkClass->ClearMenus();
 			Player->ADD_GOSSIP_ITEM(4, ss.str().c_str(), GOSSIP_SENDER_MAIN, 1000);
 			Player->ADD_GOSSIP_ITEM(GOSSIP_ICON_DOT, "Ok bye..", GOSSIP_SENDER_MAIN, 1000);
