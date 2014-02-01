@@ -12,11 +12,8 @@ set(scripts_STAT_SRCS
   ${scripts_STAT_SRCS}
   Custom/my_test_script.cpp
   Custom/Professions_NPC.cpp
-  Custom/arena_top_teams.cpp
-  Custom/npc_hunterpetvendor.cpp
   Custom/npc_changer.cpp
   Custom/npc_suffixvendor.cpp
-  Custom/npc_arena_spectator.cpp
   Custom/enchanter.cpp
   Custom/npc_title.cpp
   Custom/Npc_Beastmaster.cpp
