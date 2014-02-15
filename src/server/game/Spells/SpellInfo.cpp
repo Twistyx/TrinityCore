@@ -1487,7 +1487,8 @@ SpellCastResult SpellInfo::CheckTarget(Unit const* caster, WorldObject const* ta
         return SPELL_FAILED_BAD_TARGETS;
 
     // check visibility - ignore stealth for implicit (area) targets
-    if (!(AttributesEx6 & SPELL_ATTR6_CAN_TARGET_INVISIBLE) && !caster->CanSeeOrDetect(target, implicit))
+    if (!(AttributesEx6 & SPELL_ATTR6_CAN_TARGET_INVISIBLE) && (!caster->CanSeeOrDetect(target, implicit)
+        && caster->GetEntry() != 12999)) // ignore if the caster is WORLD_TRIGGER
         return SPELL_FAILED_BAD_TARGETS;
 
     Unit const* unitTarget = target->ToUnit();
@@ -1579,16 +1580,6 @@ SpellCastResult SpellInfo::CheckTarget(Unit const* caster, WorldObject const* ta
             return SPELL_FAILED_TARGET_IS_PLAYER;
         else
             return SPELL_FAILED_BAD_TARGETS;
-            
-             // Check los for Whirlwind and totems 
-	if ((Effects[0].TargetA.GetTarget() == TARGET_SRC_CASTER) && (Effects[0].TargetB.GetTarget() == TARGET_UNIT_SRC_AREA_ENEMY))
-	 if (!caster->IsWithinLOSInMap(target))
-	 return SPELL_FAILED_BAD_TARGETS;
-
-	 // Check this fix for Typhon ..
-	 if (Effects[0].TargetA.GetTarget() == TARGET_UNIT_CONE_ENEMY_104)
-	 if (!caster->IsWithinLOSInMap(target))
-	 return SPELL_FAILED_LINE_OF_SIGHT;
     }
 
     // check GM mode and GM invisibility - only for player casts (npc casts are controlled by AI) and negative spells
