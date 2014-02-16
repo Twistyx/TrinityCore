@@ -7469,7 +7469,7 @@ void Player::UpdateArea(uint32 newArea)
 
     // previously this was in UpdateZone (but after UpdateArea) so nothing will break
     pvpInfo.IsInNoPvPArea = false;
-    if (area && area->IsSanctuary() || GetAreaId() == 1640)   // in sanctuary
+    if ((area && area->IsSanctuary()) || GetAreaId() == 1640)   // in sanctuary
     {
         SetByteFlag(UNIT_FIELD_BYTES_2, 1, UNIT_BYTE2_FLAG_SANCTUARY);
         pvpInfo.IsInNoPvPArea = true;
@@ -13921,7 +13921,10 @@ void Player::ApplyEnchantment(Item* item, EnchantmentSlot slot, bool apply, bool
                                     {
                                         if (item_rand->enchant_id[k] == enchant_id)
                                         {
-                                            basepoints = int32((item_rand->prefix[k] * item->GetItemSuffixFactor()) / 10000);
+                                            if (enchant_spell_id == ITEM_MOD_STAMINA)
+                                                basepoints = int32((item_rand->prefix[k] * item->GetItemSuffixFactor()) / 15000);
+                                            else
+                                                basepoints = int32((item_rand->prefix[k] * item->GetItemSuffixFactor()) / 10000);
                                             break;
                                         }
                                     }
@@ -13967,7 +13970,10 @@ void Player::ApplyEnchantment(Item* item, EnchantmentSlot slot, bool apply, bool
                             {
                                 if (item_rand_suffix->enchant_id[k] == enchant_id)
                                 {
-                                    enchant_amount = uint32((item_rand_suffix->prefix[k] * item->GetItemSuffixFactor()) / 10000);
+                                    if (enchant_spell_id == ITEM_MOD_STAMINA)
+                                        enchant_amount = uint32((item_rand_suffix->prefix[k] * item->GetItemSuffixFactor()) / 15000);
+                                    else
+                                        enchant_amount = uint32((item_rand_suffix->prefix[k] * item->GetItemSuffixFactor()) / 10000);
                                     break;
                                 }
                             }
@@ -20103,15 +20109,15 @@ void Player::ResetContestedPvP()
     m_contestedPvPTimer = 0;
 }
 
-void Player::UpdatePvPFlag(time_t currTime)
+void Player::UpdatePvPFlag(time_t /*currTime*/)
 {
-    if (!IsPvP())
-        return;
+    //if (!IsPvP())
+    //    return;
 
-    if (!pvpInfo.EndTimer || currTime < (pvpInfo.EndTimer + 300) || pvpInfo.IsHostile)
-        return;
+    //if (!pvpInfo.EndTimer || currTime < (pvpInfo.EndTimer + 300) || pvpInfo.IsHostile)
+    //    return;
 
-    UpdatePvP(false);
+    UpdatePvP(true);
 }
 
 void Player::UpdateDuelFlag(time_t currTime)
@@ -21598,20 +21604,22 @@ void Player::UpdatePvPState(bool onlyFFA)
     if (onlyFFA)
         return;
 
-    if (pvpInfo.IsHostile)                               // in hostile area
-    {
-        if (!IsPvP() || pvpInfo.EndTimer)
-            UpdatePvP(true, true);
-    }
-    else                                                    // in friendly area
-    {
-        if (IsPvP() && !HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_IN_PVP) && !pvpInfo.EndTimer)
-            pvpInfo.EndTimer = time(NULL);                  // start toggle-off
-    }
+    //if (pvpInfo.IsHostile)                               // in hostile area
+    //{
+    //    if (!IsPvP() || pvpInfo.EndTimer)
+    //        UpdatePvP(true, true);
+    //}
+    //else                                                    // in friendly area
+    //{
+    //    if (IsPvP() && !HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_IN_PVP) && !pvpInfo.EndTimer)
+    //        pvpInfo.EndTimer = time(NULL);                  // start toggle-off
+    //}
+    UpdatePvP(true, true); // force pvp flag
 }
 
 void Player::SetPvP(bool state)
 {
+    state = true;
     Unit::SetPvP(state);
     for (ControlList::iterator itr = m_Controlled.begin(); itr != m_Controlled.end(); ++itr)
         (*itr)->SetPvP(state);
