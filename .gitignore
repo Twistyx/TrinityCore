@@ -16,3 +16,7 @@ CMakeLists.txt.user
 *.BACKUP.*
 *.BASE.*
 *.LOCAL.*
+
+RubenServ.sublime-project
+RubenServ.sublime-workspace
+sftp-config.json
