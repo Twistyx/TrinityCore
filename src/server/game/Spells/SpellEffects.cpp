@@ -608,8 +608,8 @@ void Spell::EffectSchoolDMG(SpellEffIndex effIndex)
                         if (Item* item = caster->GetWeaponForAttack(RANGED_ATTACK))
                         {
                             ItemTemplate const* weaponTemplate = item->GetTemplate();
-                            float dmg_min = weaponTemplate->Damage[0].DamageMin;
-                            float dmg_max = weaponTemplate->Damage[0].DamageMax;
+                            float dmg_min = weaponTemplate->Damage[0].DamageMin + weaponTemplate->Damage[1].DamageMin;
+                            float dmg_max = weaponTemplate->Damage[0].DamageMax + weaponTemplate->Damage[1].DamageMax;
                             if (dmg_max == 0.0f && dmg_min > dmg_max)
                                 damage += int32(dmg_min);
                             else
