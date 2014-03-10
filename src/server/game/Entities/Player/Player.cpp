@@ -22810,6 +22810,19 @@ void Player::learnDefaultSpells()
         else                                                // but send in normal spell in game learn case
             learnSpell(tspell, true);
     }
+
+    // learn dualspec by default
+    if (!IsInWorld())
+    {
+        addSpell(63644, true, true, true, false);
+        addSpell(63645, true, true, true, false);
+    }
+    else
+    {
+        learnSpell(63644, true);
+        learnSpell(63645, true);
+    }
+    UpdateSpecCount(2);
 }
 
 void Player::learnQuestRewardedSpells(Quest const* quest)
