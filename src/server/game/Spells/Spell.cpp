@@ -5171,7 +5171,11 @@ SpellCastResult Spell::CheckCast(bool strict)
                     target->GetContactPoint(m_caster, pos.m_positionX, pos.m_positionY, pos.m_positionZ);
                     target->GetFirstCollisionPosition(pos, CONTACT_DISTANCE, target->GetRelativeAngle(m_caster));
 
-                    m_preGeneratedPath.SetPathLengthLimit(m_spellInfo->GetMaxRange(true) * 1.5f);
+                    float limit = m_spellInfo->GetMaxRange(true);
+                    if (m_caster->HasAura(58097)) { // Glyph of Charge
+                        limit += 5.0f;
+                    }
+                    m_preGeneratedPath.SetPathLengthLimit(limit * 1.5f);
                     bool result = m_preGeneratedPath.CalculatePath(pos.m_positionX, pos.m_positionY, pos.m_positionZ + target->GetObjectSize());
                     if (m_preGeneratedPath.GetPathType() & PATHFIND_SHORT)
                         return SPELL_FAILED_OUT_OF_RANGE;
