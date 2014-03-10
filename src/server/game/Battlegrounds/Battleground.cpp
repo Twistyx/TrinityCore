@@ -697,6 +697,37 @@ void Battleground::YellToAll(Creature* creature, char const* text, uint32 langua
         }
 }
 
+void Battleground::RewardTokenToAll(const uint32 token1, const uint32 token2, const uint32 winner, const uint32 quest)
+{
+    uint32 count = 1;
+
+    for (BattlegroundPlayerMap::const_iterator itr = m_Players.begin(); itr != m_Players.end(); ++itr)
+    {
+        if (Player* player = _GetPlayer(itr, "RewardTokenToBG"))
+        {
+            if (!quest)
+            {
+                uint32 team = itr->second.Team;
+                if (!team)
+                    team = player->GetTeam();
+                if (team == winner)
+                count = 3;
+                if (token1)
+                    player->AddItem(token1, count);
+                if (token2)
+                    player->AddItem(token2, count);
+            }
+            else if (player->GetQuestStatus(quest) == QUEST_STATUS_INCOMPLETE)
+            {
+                if (token1)
+                    player->AddItem(token1, count);
+                if (token2)
+                    player->AddItem(token2, count);
+            }
+        }
+    }
+}
+
 void Battleground::RewardHonorToTeam(uint32 Honor, uint32 TeamID)
 {
     for (BattlegroundPlayerMap::const_iterator itr = m_Players.begin(); itr != m_Players.end(); ++itr)
@@ -774,6 +805,7 @@ void Battleground::EndBattleground(uint32 winner)
     {
         winnerArenaTeam = sArenaTeamMgr->GetArenaTeamById(GetArenaTeamIdForTeam(winner));
         loserArenaTeam = sArenaTeamMgr->GetArenaTeamById(GetArenaTeamIdForTeam(GetOtherTeam(winner)));
+        RewardTokenToAll(20880, 0, 0, 50002);
 
         if (winnerArenaTeam && loserArenaTeam && winnerArenaTeam != loserArenaTeam)
         {

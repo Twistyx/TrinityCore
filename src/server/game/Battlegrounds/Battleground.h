@@ -419,6 +419,7 @@ class Battleground
 
         void PlaySoundToTeam(uint32 SoundID, uint32 TeamID);
         void PlaySoundToAll(uint32 SoundID);
+        void RewardTokenToAll(const uint32 token1, const uint32 token2, const uint32 winner, const uint32 quest);
         void CastSpellOnTeam(uint32 SpellID, uint32 TeamID);
         void RemoveAuraOnTeam(uint32 SpellID, uint32 TeamID);
         void RewardHonorToTeam(uint32 Honor, uint32 TeamID);
