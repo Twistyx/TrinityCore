@@ -1392,6 +1392,8 @@ void AchievementMgr::UpdateAchievementCriteria(AchievementCriteriaTypes type, ui
                 }
 
                 SetCriteriaProgress(achievementCriteria, 1, PROGRESS_ACCUMULATE);
+                if ((GetCriteriaProgress(achievementCriteria)->counter + 1) == 600)
+                    GetPlayer()->SetTitle(sCharTitlesStore.LookupEntry(43)); //43 == duelist title
                 break;
             case ACHIEVEMENT_CRITERIA_TYPE_GAIN_REVERED_REPUTATION:
                 SetCriteriaProgress(achievementCriteria, GetPlayer()->GetReputationMgr().GetReveredFactionCount());
