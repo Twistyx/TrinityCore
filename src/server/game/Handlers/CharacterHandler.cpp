@@ -1935,7 +1935,7 @@ void WorldSession::HandleCharFactionOrRaceChange(WorldPacket& recvData)
             }
 
             // Leave Arena Teams
-            Player::LeaveAllArenaTeams(guid);
+            // Player::LeaveAllArenaTeams(guid);
 
             // Reset homebind and position
             stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_PLAYER_HOMEBIND);
@@ -1946,21 +1946,21 @@ void WorldSession::HandleCharFactionOrRaceChange(WorldPacket& recvData)
             stmt->setUInt32(0, lowGuid);
             if (team == TEAM_ALLIANCE)
             {
-                stmt->setUInt16(1, 0);
-                stmt->setUInt16(2, 1519);
-                stmt->setFloat (3, -8867.68f);
-                stmt->setFloat (4, 673.373f);
-                stmt->setFloat (5, 97.9034f);
-                Player::SavePositionInDB(0, -8867.68f, 673.373f, 97.9034f, 0.0f, 1519, lowGuid);
+                stmt->setUInt16(1, 1);
+                stmt->setUInt16(2, 1638);
+                stmt->setFloat (3, -1048.650024f);
+                stmt->setFloat (4, -304.483002f);
+                stmt->setFloat (5, 159.029999f);
+                Player::SavePositionInDB(1, -1048.650024f, -304.483002f, 159.029999f, 1.76f, 1638, lowGuid);
             }
             else
             {
                 stmt->setUInt16(1, 1);
-                stmt->setUInt16(2, 1637);
-                stmt->setFloat (3, 1633.33f);
-                stmt->setFloat (4, -4439.11f);
-                stmt->setFloat (5, 15.7588f);
-                Player::SavePositionInDB(1, 1633.33f, -4439.11f, 15.7588f, 0.0f, 1637, lowGuid);
+                stmt->setUInt16(2, 1638);
+                stmt->setFloat (3, -1473.9f);
+                stmt->setFloat (4, -79.327f);
+                stmt->setFloat (5, 161.556870f);
+                Player::SavePositionInDB(1, -1473.9f, -79.327f, 161.556870f, 5.77f, 1638, lowGuid);
             }
             trans->Append(stmt);
 
