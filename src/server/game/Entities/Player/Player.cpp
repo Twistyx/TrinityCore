@@ -7692,6 +7692,10 @@ void Player::DuelComplete(DuelCompleteType type)
             break;
     }
 
+    // Custom quest token
+    if (duel->opponent->GetQuestStatus(50001) == QUEST_STATUS_INCOMPLETE)
+        duel->opponent->AddItem(43636, 1);
+
     // Victory emote spell
     if (type != DUEL_INTERRUPTED)
         duel->opponent->CastSpell(duel->opponent, 52852, true);
