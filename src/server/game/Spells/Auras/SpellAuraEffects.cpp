@@ -437,12 +437,14 @@ int32 AuraEffect::CalculateAmount(Unit* caster)
                                 {
                                     for (int t = 0; t < MAX_ITEM_ENCHANTMENT_EFFECTS; t++)
                                         if (pEnchant->spellid[t] == m_spellInfo->Id)
-                                    {
-                                        amount = uint32((item_rand_suffix->prefix[k]*castItem->GetItemSuffixFactor()) / 10000);
-                                        break;
-                                    }
+                                        {
+                                            if (pEnchant->ID == 2803)
+                                                amount = uint32((item_rand_suffix->prefix[k]*castItem->GetItemSuffixFactor()) / 15000);
+                                            else
+                                                amount = uint32((item_rand_suffix->prefix[k]*castItem->GetItemSuffixFactor()) / 10000);
+                                            break;
+                                        }
                                 }
-
                                 if (amount)
                                     break;
                             }
