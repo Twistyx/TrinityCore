@@ -1,6 +1,12 @@
 #include "ScriptPCH.h"
 #include "ItemEnchantmentMgr.h"
 
+#define H_X             -1258.48f
+#define H_Y             63.53f
+#define H_Z             127.9f
+#define A_X             -1208.98f
+#define A_Y             -88.27f
+#define A_Z             161.50f
 #define TOKEN           41596
 #define TOKEN_COUNT     10
 #define TITLE_REWARDED  47 // title "The Conqueror"
@@ -41,6 +47,13 @@ enum Gossip_Option_Custom
     CUSTOM_OPTION_TITLE_CLIMB   = 31,
     CUSTOM_OPTION_SPRINT        = 32,
     CUSTOM_OPTION_MAX
+};
+
+enum NPCs { 
+    NPC_ALLIANCE_LOOK_BACK    = 500113,
+    NPC_ALLIANCE_LOOK_ARROUND = 500114,
+    NPC_HORDE_LOOK_BACK       = 500115,
+    NPC_HORDE_LOOK_ARROUND    = 500116
 };
 
 static const char   *titlesNames[28] =
@@ -459,6 +472,54 @@ public:
     }
 };
 
+class npc_teleport_guard : public CreatureScript {
+public:
+    npc_teleport_guard() : CreatureScript("npc_teleport_guard") {}
+    struct npc_teleport_guardAI : public ScriptedAI {
+        npc_teleport_guardAI(Creature* me) : ScriptedAI(me) {
+            me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+            me->ApplySpellImmune(0, IMMUNITY_DAMAGE, SPELL_SCHOOL_NORMAL,     true);
+            me->ApplySpellImmune(0, IMMUNITY_DAMAGE, SPELL_SCHOOL_MASK_MAGIC, true);
+        }
+        void TeleportPlayerOut(Player* you, const float x, const float y, const float z) {
+            you->CastSpell(you,  4801, 0); // teleport effect
+            you->CastSpell(you, 51581, 0); // stun spell
+            you->TeleportTo(1, x, y, z, you->GetOrientation());
+            you->SendAttackSwingCancelAttack();
+            you->getHostileRefManager().deleteReferences();
+            you->CombatStop();
+        }
+        void Reset()                      OVERRIDE {}
+        void EnterCombat(Unit* /*who*/)   OVERRIDE {}
+        void AttackStart(Unit* /*who*/)   OVERRIDE {}
+        void UpdateAI(uint32  /*diff*/)   OVERRIDE {}
+        void MoveInLineOfSight(Unit* who) OVERRIDE {
+            if (!who || !who->IsInWorld() || who->GetZoneId() != 1638)
+                return;
+            if (!me->IsWithinDist(who, 65.0f, false))
+                return;
+            Player* you = who->GetCharmerOrOwnerPlayerOrPlayerItself();
+            if (!you || you->IsGameMaster() || you->IsBeingTeleported())
+                return;
+            if (you->GetTeam() == HORDE) {
+                if (  (me->GetEntry() == NPC_ALLIANCE_LOOK_BACK && me->isInBackInMap(who, 12.0f))
+                    || me->GetEntry() == NPC_ALLIANCE_LOOK_ARROUND)
+                    TeleportPlayerOut(you, A_X, A_Y, A_Z);
+            }
+            else {
+                if (  (me->GetEntry() == NPC_HORDE_LOOK_BACK && me->isInBackInMap(who, 12.0f))
+                    || me->GetEntry() == NPC_HORDE_LOOK_ARROUND)
+                    TeleportPlayerOut(you, H_X, H_Y, H_Z);
+            }
+            me->SetOrientation(me->GetHomePosition().GetOrientation());
+            return;
+        }
+    };
+    CreatureAI* GetAI(Creature* creature) const OVERRIDE {
+        return new npc_teleport_guardAI(creature);
+    }
+};
+
 void AddSC_cyclone_customs() 
 {
     new title_vendor();
@@ -466,4 +527,5 @@ void AddSC_cyclone_customs()
     new squirel_pew_pew();
     new profession_npc();
     new suffix_npc();
+    new npc_teleport_guard();
 }
