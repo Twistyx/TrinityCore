@@ -84,7 +84,7 @@ public:
 	}
 };
  
-void AddSC_Npc_Beastmaster()
+void AddSC_npc_beastmaster()
 {
 	new npc_beastmaster();
 }
