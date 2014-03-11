@@ -2,6 +2,7 @@
 #include "ItemEnchantmentMgr.h"
 
 #define ELEM_COUNT     25 // Amount of items showed per page
+#define TITLE_REWARDED  47 // title "The Conqueror"
 #define TXT_PREV_PG     "<- Previous page"
 #define TXT_GO_BACK     "<-- back to item list"
 #define TXT_NEXT_PG     "Next page ->"
@@ -11,6 +12,11 @@
 #define TXT_ERR_SKILL   "you already have that skill"
 #define TXT_ERR_MAX     "you already know two professions!"
 #define TXT_PROBLEM     "Internal error occured!"
+#define TXT_SPRINT      "Make me the fastest turtle ever!"
+#define TXT_GET_TITLE   "Gimi my Title !"
+#define TXT_VENDOR_LIST "Show me your goodies..."
+#define TXT_ERR_TITLE   "you already have the Title :)"
+#define TXT_NO_FLAG     "Gimi Vendor flags plz."
 
 enum Gossip_Option_Custom
 {
@@ -25,6 +31,8 @@ enum Gossip_Option_Custom
     CUSTOM_OPTION_ITEM_MENU_P7  = 28,
     CUSTOM_OPTION_ITEM_MENU_MAX = 29,
     CUSTOM_OPTION_UNLEARN       = 30,
+    CUSTOM_OPTION_TITLE_CLIMB   = 31,
+    CUSTOM_OPTION_SPRINT        = 32,
     CUSTOM_OPTION_MAX
 };
 
@@ -234,8 +242,55 @@ public:
     }
 };
 
+class squirel_pew_pew : public CreatureScript 
+{
+public:
+    squirel_pew_pew() : CreatureScript("squirel_pew_pew") {}
+
+    bool OnGossipHello(Player* player, Creature* me)
+    {
+        player->PlayerTalkClass->ClearMenus();
+        if (me->IsVendor())
+            player->ADD_GOSSIP_ITEM(GOSSIP_ICON_VENDOR, TXT_VENDOR_LIST, GOSSIP_SENDER_MAIN, GOSSIP_OPTION_VENDOR);
+        else
+            player->ADD_GOSSIP_ITEM(GOSSIP_ICON_VENDOR, TXT_NO_FLAG, GOSSIP_SENDER_MAIN, CUSTOM_OPTION_EXIT);
+        if (player->HasTitle(TITLE_REWARDED))
+            player->ADD_GOSSIP_ITEM(GOSSIP_ICON_TABARD, TXT_GET_TITLE, GOSSIP_SENDER_MAIN, CUSTOM_OPTION_TITLE_CLIMB);
+        else
+            player->ADD_GOSSIP_ITEM(GOSSIP_ICON_TABARD, TXT_ERR_TITLE, GOSSIP_SENDER_MAIN, CUSTOM_OPTION_TITLE_CLIMB);
+        player->ADD_GOSSIP_ITEM(GOSSIP_ICON_TRAINER, TXT_SPRINT, GOSSIP_SENDER_MAIN, CUSTOM_OPTION_SPRINT);
+        player->ADD_GOSSIP_ITEM(GOSSIP_ICON_DOT, TXT_KTHXBY, GOSSIP_SENDER_MAIN, CUSTOM_OPTION_EXIT);
+        player->PlayerTalkClass->SendGossipMenu(8, me->GetGUID());
+        return (true);
+    }
+
+    bool OnGossipSelect(Player* player, Creature* me, uint32 /*uiSender*/, uint32 uiAction) 
+    {
+        if (uiAction == CUSTOM_OPTION_TITLE_CLIMB) 
+        {
+            player->SetTitle(sCharTitlesStore.LookupEntry(TITLE_REWARDED));
+            player->PlayerTalkClass->SendCloseGossip();
+        }
+        else if (uiAction == CUSTOM_OPTION_SPRINT) 
+        {
+            player->CastSpell(player, 50085, 0); // Spell Slow Fall
+            player->CastSpell(player, 51582, 0); // Spell Rocket Boots Engaged
+            player->PlayerTalkClass->SendCloseGossip();
+        }
+        else if (uiAction == GOSSIP_OPTION_VENDOR) 
+        {
+            player->PlayerTalkClass->ClearMenus();
+            player->GetSession()->SendListInventory(me->GetGUID());
+        }
+        else
+            player->PlayerTalkClass->SendCloseGossip();
+        return (true);
+    }
+};
+
 void AddSC_cyclone_customs() 
 {
+    new squirel_pew_pew();
     new profession_npc();
     new suffix_npc();
 }
