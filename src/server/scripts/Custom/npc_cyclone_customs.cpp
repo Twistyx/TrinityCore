@@ -7,6 +7,10 @@
 #define TXT_NEXT_PG     "Next page ->"
 #define TXT_LAST_PAGE   "you reach the last page !"
 #define TXT_KTHXBY      "Nevermind.."
+#define TXT_BAD_SKILL   "Profession NPC: received non-valid skill ID (LearnAllRecipesInProfession)"
+#define TXT_ERR_SKILL   "you already have that skill"
+#define TXT_ERR_MAX     "you already know two professions!"
+#define TXT_PROBLEM     "Internal error occured!"
 
 enum Gossip_Option_Custom
 {
@@ -20,6 +24,7 @@ enum Gossip_Option_Custom
     CUSTOM_OPTION_ITEM_MENU_P6  = 27,
     CUSTOM_OPTION_ITEM_MENU_P7  = 28,
     CUSTOM_OPTION_ITEM_MENU_MAX = 29,
+    CUSTOM_OPTION_UNLEARN       = 30,
     CUSTOM_OPTION_MAX
 };
 
@@ -137,7 +142,100 @@ suffix_npc() : CreatureScript("suffix_npc") { }
     }
 };
 
+class profession_npc : public CreatureScript 
+{
+public:
+    profession_npc() : CreatureScript("profession_npc") {}
+
+    bool LearnAllRecipesInProfession(Player* player, SkillType skill)
+    {
+        SkillLineEntry const *SkillInfo = sSkillLineStore.LookupEntry(skill);
+
+        uint16  skill_level = 225;
+
+        if (!SkillInfo) 
+        {
+            sLog->outError(LOG_FILTER_PLAYER_SKILLS, TXT_BAD_SKILL);
+            return (false);
+        }
+        if (skill == SKILL_ENGINEERING)
+            skill_level = 150;
+        player->SetSkill(SkillInfo->id, player->GetSkillStep(SkillInfo->id), skill_level, skill_level);
+        return (true);
+    }
+
+    bool ForgotSkill(Player* player, SkillType skill)
+    {
+        if (!player->HasSkill(skill))
+            return (false);
+        SkillLineEntry const *SkillInfo = sSkillLineStore.LookupEntry(skill);
+        if (!SkillInfo) 
+        {
+            sLog->outError(LOG_FILTER_PLAYER_SKILLS, TXT_BAD_SKILL);
+            return (false);
+        }
+        player->SetSkill(SkillInfo->id, player->GetSkillStep(SkillInfo->id), 0, 0);
+        return (true);
+    }
+
+    bool PlayerAlreadyHasTwoProfessions(Player *player)
+    {
+        uint32 skillCount = player->HasSkill(SKILL_MINING)   + player->HasSkill(SKILL_SKINNING)
+                          + player->HasSkill(SKILL_HERBALISM)+ player->HasSkill(SKILL_ENGINEERING);
+        if (skillCount >= 2)
+            return true;
+        return false;
+    }
+
+    void CompleteLearnProfession(Player *player, SkillType skill)
+    {
+        if (PlayerAlreadyHasTwoProfessions(player))
+            player->GetSession()->SendNotification(TXT_ERR_MAX);
+        else if (!LearnAllRecipesInProfession(player, skill))
+            player->GetSession()->SendNotification(TXT_PROBLEM);
+    }
+
+    bool OnGossipHello(Player *player, Creature* me) 
+    {
+        player->PlayerTalkClass->ClearMenus();
+        player->ADD_GOSSIP_ITEM(GOSSIP_ICON_TRAINER,    "Engineering", GOSSIP_SENDER_MAIN,    SKILL_ENGINEERING);
+        player->ADD_GOSSIP_ITEM(GOSSIP_ICON_TRAINER,    "Herbalism",   GOSSIP_SENDER_MAIN,    SKILL_HERBALISM);
+        player->ADD_GOSSIP_ITEM(GOSSIP_ICON_TRAINER,    "Skinning",    GOSSIP_SENDER_MAIN,    SKILL_SKINNING);
+        player->ADD_GOSSIP_ITEM(GOSSIP_ICON_TRAINER,    "Mining",      GOSSIP_SENDER_MAIN,    SKILL_MINING);
+        player->ADD_GOSSIP_ITEM(GOSSIP_ICON_INTERACT_1, "Unlearn All", CUSTOM_OPTION_UNLEARN, 0);
+        player->ADD_GOSSIP_ITEM(GOSSIP_ICON_DOT,        TXT_KTHXBY, CUSTOM_OPTION_EXIT,    0);
+        player->PlayerTalkClass->SendGossipMenu(907, me->GetGUID());
+        return (true);
+    }
+ 
+    bool OnGossipSelect(Player* Player, Creature* me, uint32 uiSender, uint32 skill) 
+    {
+        Player->PlayerTalkClass->ClearMenus();
+ 
+        if (uiSender == CUSTOM_OPTION_UNLEARN) 
+        {
+            ForgotSkill(Player, SKILL_ENGINEERING);
+            ForgotSkill(Player, SKILL_HERBALISM);
+            ForgotSkill(Player, SKILL_SKINNING);
+            ForgotSkill(Player, SKILL_MINING);
+        }
+        else if (uiSender == GOSSIP_SENDER_MAIN) 
+        {
+            if(Player->HasSkill(skill))
+                Player->GetSession()->SendNotification(TXT_ERR_SKILL);
+            else
+                CompleteLearnProfession(Player, (SkillType)skill);
+        }
+        if (uiSender == CUSTOM_OPTION_EXIT)
+            Player->PlayerTalkClass->SendCloseGossip();
+        else
+            OnGossipHello(Player, me);
+        return (true);
+    }
+};
+
 void AddSC_cyclone_customs() 
 {
+    new profession_npc();
     new suffix_npc();
 }
