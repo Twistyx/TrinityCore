@@ -1,9 +1,9 @@
 #include "ScriptPCH.h"
 #include "Pet.h"
  
-class Npc_Beastmaster : public CreatureScript {
+class npc_beastmaster : public CreatureScript {
 public:
-	Npc_Beastmaster() : CreatureScript("Npc_Beastmaster") { }
+	npc_beastmaster() : CreatureScript("npc_beastmaster") { }
 	void CreatePet(Player *player, Creature * m_creature, uint32 entry) {
 		if(player->getClass() != CLASS_HUNTER) {
 		m_creature->MonsterWhisper("You are not Hunter!", player->GetGUID());
@@ -86,5 +86,5 @@ public:
  
 void AddSC_Npc_Beastmaster()
 {
-	new Npc_Beastmaster();
+	new npc_beastmaster();
 }
