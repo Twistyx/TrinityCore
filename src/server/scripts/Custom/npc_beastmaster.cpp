@@ -65,13 +65,13 @@ public:
 			player->ADD_GOSSIP_ITEM(4, "<- Main Menu", GOSSIP_SENDER_MAIN, 100);
 			player->ADD_GOSSIP_ITEM(6, "Hyena.",       GOSSIP_SENDER_MAIN, 4127);
 			player->ADD_GOSSIP_ITEM(6, "Ravager.",     GOSSIP_SENDER_MAIN, 17527);
-			player->ADD_GOSSIP_ITEM(6, "Bat.",         GOSSIP_SENDER_MAIN, 6182);
+			player->ADD_GOSSIP_ITEM(6, "Bat.",         GOSSIP_SENDER_MAIN, 1554);
 			player->ADD_GOSSIP_ITEM(6, "Boar.",        GOSSIP_SENDER_MAIN, 345);
 			player->ADD_GOSSIP_ITEM(6, "Spider.",      GOSSIP_SENDER_MAIN, 2349);
-			player->ADD_GOSSIP_ITEM(6, "Wolf.",        GOSSIP_SENDER_MAIN, 3637);
-			player->ADD_GOSSIP_ITEM(6, "Raptor.",      GOSSIP_SENDER_MAIN, 17348);
-			player->ADD_GOSSIP_ITEM(6, "Bear.",        GOSSIP_SENDER_MAIN, 2233);
-			player->ADD_GOSSIP_ITEM(6, "Crab.",        GOSSIP_SENDER_MAIN, 3823);
+			player->ADD_GOSSIP_ITEM(6, "Wolf.",        GOSSIP_SENDER_MAIN, 3823);
+			player->ADD_GOSSIP_ITEM(6, "Raptor.",      GOSSIP_SENDER_MAIN, 3637);
+			player->ADD_GOSSIP_ITEM(6, "Bear.",        GOSSIP_SENDER_MAIN, 17348);
+			player->ADD_GOSSIP_ITEM(6, "Crab.",        GOSSIP_SENDER_MAIN, 2233);
 			player->ADD_GOSSIP_ITEM(6, "Adder.",       GOSSIP_SENDER_MAIN, 5048);
 			player->ADD_GOSSIP_ITEM(4, "Nevermind",    GOSSIP_SENDER_MAIN, 150);
 			player->SEND_GOSSIP_MENU(1, m_creature->GetGUID());
