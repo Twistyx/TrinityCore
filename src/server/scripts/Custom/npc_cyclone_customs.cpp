@@ -1,6 +1,8 @@
 #include "ScriptPCH.h"
 #include "ItemEnchantmentMgr.h"
 
+#define TOKEN           41596
+#define TOKEN_COUNT     10
 #define TITLE_REWARDED  47 // title "The Conqueror"
 #define ELEM_COUNT      25 // Amount of enchants showed per page
 #define TXT_PREV_PG     "<- Previous page"
@@ -17,6 +19,11 @@
 #define TXT_VENDOR_LIST "Show me your goodies..."
 #define TXT_ERR_TITLE   "you already have the Title :)"
 #define TXT_NO_FLAG     "Gimi Vendor flags plz."
+#define FORMAT_END      ":20:20|t "
+#define TXT_NEXT_TITLE  "Next title : |TInterface/PvPRankBadges/PvPRank"
+#define TXT_REQ_TITLE   "you need to be at least : |TInterface/PvPRankBadges/PvPRank"
+#define TXT_MAX_RANK    "you already are max rank !"
+#define TXT_WSG_MARK    " Warsong Gulch Mark of Ranking to go! We sell the same items as the Arena Vendors do."
 
 enum Gossip_Option_Custom
 {
@@ -34,6 +41,38 @@ enum Gossip_Option_Custom
     CUSTOM_OPTION_TITLE_CLIMB   = 31,
     CUSTOM_OPTION_SPRINT        = 32,
     CUSTOM_OPTION_MAX
+};
+
+static const char   *titlesNames[28] =
+{
+    "Private",
+    "Corporal",
+    "Sergeant",
+    "Master Sergeant",
+    "Sergeant Major",
+    "Knight",
+    "Knight Lieutenant",
+    "Knight Captain",
+    "Knight Champion",
+    "Lieutenant Commander",
+    "Commander",
+    "Marshal",
+    "Field Marshal",
+    "Grand Marshal",
+    "Scout",
+    "Grunt",
+    "Sergeant",
+    "Senior Sergeant",
+    "First Sergeant",
+    "Stone Guard",
+    "Blood Guard",
+    "Legionnaire",
+    "Centurion",
+    "Champion",
+    "Lieutenant General",
+    "General",
+    "Warlord",
+    "High Warlord"
 };
 
 // this function generate the gossip menu for selecting random enchants
@@ -119,6 +158,22 @@ static bool SellItem(Player* player, Creature* me, uint32 data, uint32 itemId)
     player->PlayerTalkClass->ClearMenus();
     player->GetSession()->SendListInventory(me->GetGUID());
     return true;
+}
+
+static uint32 GetTotalTokens(Player* Player) 
+{
+    //intialize an item
+    Item*           pItem;
+    //loop in the currencytoken slots
+    for (uint8 i = CURRENCYTOKEN_SLOT_START; i < CURRENCYTOKEN_SLOT_END; ++i) 
+    {
+        //try to set or item to the one from this slot
+        pItem = Player->GetItemByPos(INVENTORY_SLOT_BAG_0, i);
+        //if player have an item in this slot and his entry is the same has our token return the count
+        if (pItem && pItem->GetEntry() == TOKEN) 
+            return (pItem->GetCount());
+    }
+    return (0);
 }
 
 class suffix_npc : public CreatureScript 
@@ -288,8 +343,126 @@ public:
     }
 };
 
+class title_vendor : public CreatureScript 
+{
+public:
+    title_vendor() : CreatureScript("title_vendor") {}
+
+    uint16 NeededToken(uint32 rank) 
+    {
+        uint16 total = 0;
+
+        while (rank) 
+        {
+            total += TOKEN_COUNT * rank;
+            rank--;
+        }
+        return (total);
+    }
+
+    bool OnGossipHello(Player* player, Creature* me) 
+    {
+        std::ostringstream  ss;
+        const uint32        totalTokens = GetTotalTokens(player);
+        const int8          faction     = (player->GetTeam() == ALLIANCE) ? -1 : 13;
+        const uint8         npcTitle    = me->GetCreatureTemplate()->maxgold;
+        const uint16        reqTokens   = NeededToken(npcTitle);
+
+        if (totalTokens >= reqTokens) 
+        {
+            if (!me->IsVendor())
+                return (false);
+            player->PlayerTalkClass->ClearMenus();
+            player->GetSession()->SendListInventory(me->GetGUID());
+        }
+        else 
+        {
+            player->PlayerTalkClass->ClearMenus();
+            ss << TXT_REQ_TITLE;
+            if (npcTitle < 10)
+                ss << "0";
+            ss << 0 + npcTitle << FORMAT_END << titlesNames[npcTitle + faction];
+            ss << " still " << reqTokens - totalTokens << TXT_WSG_MARK;
+            player->ADD_GOSSIP_ITEM(GOSSIP_ICON_DOT, ss.str().c_str(), GOSSIP_SENDER_MAIN, CUSTOM_OPTION_EXIT);
+            player->ADD_GOSSIP_ITEM(GOSSIP_ICON_DOT, TXT_KTHXBY, GOSSIP_SENDER_MAIN, CUSTOM_OPTION_EXIT);
+            player->PlayerTalkClass->SendGossipMenu(8, me->GetGUID());
+        }
+        return (true);
+    }
+
+    bool OnGossipSelect(Player* player, Creature* me, uint32 data, uint32 uiAction) 
+    {
+        player->PlayerTalkClass->ClearMenus();
+        if (uiAction == GOSSIP_OPTION_VENDOR)
+            player->GetSession()->SendListInventory(me->GetGUID());
+        else if (uiAction >= CUSTOM_OPTION_ITEM_MENU && uiAction < CUSTOM_OPTION_ITEM_MENU_MAX)
+            return (GetList(player, me, data, uiAction - CUSTOM_OPTION_ITEM_MENU + 1));
+        else if (uiAction > CUSTOM_OPTION_MAX) //in that case uiAction == itemID lol
+            SellItem(player, me, data, uiAction);
+        else
+            player->PlayerTalkClass->SendCloseGossip();
+        return (true);
+    }
+};
+
+class title_npc : public CreatureScript 
+{
+public:
+    title_npc() : CreatureScript("title_npc") {}
+
+    void RewardTitles(Player *player, uint8 *nextTitle, uint16 *reqTokens, const uint16 totalTokens, const uint8 faction)
+    {
+        while ((*nextTitle < 14) && (((*reqTokens += (1 + *nextTitle) * TOKEN_COUNT)) <= totalTokens)) 
+        {
+            (*nextTitle)++;
+            player->SetTitle(sCharTitlesStore.LookupEntry(*nextTitle + faction));
+        }
+    }
+
+    const char *GetNextTitleName(const uint8 nextTitle, const uint16 reqTokens, const uint16 totalTokens, const uint8 faction)
+    {
+        std::ostringstream  ss;
+
+        if (nextTitle > 13)
+            ss << TXT_MAX_RANK;
+        else
+        {
+            ss << TXT_NEXT_TITLE;
+            if (nextTitle < 9)
+                ss << '0';
+            ss << 1 + nextTitle << FORMAT_END << titlesNames[nextTitle + faction];
+            ss << " in " << reqTokens - totalTokens << " tokens.";
+        }
+        return (ss.str().c_str());
+    }
+
+    bool OnGossipHello(Player* player, Creature* me)
+    {
+        const uint16  totalTokens = GetTotalTokens(player);
+        const uint8   faction     = (player->GetTeam() == ALLIANCE) ? 0 : 14;
+        uint8         nextTitle   = 0;
+        uint16        reqTokens   = 0;
+
+        RewardTitles(player, &nextTitle, &reqTokens, totalTokens, faction);
+        const char *gossipText = GetNextTitleName(nextTitle, reqTokens, totalTokens, faction);
+        player->PlayerTalkClass->ClearMenus();
+        player->ADD_GOSSIP_ITEM(GOSSIP_ICON_INTERACT_1, gossipText, GOSSIP_SENDER_MAIN, CUSTOM_OPTION_EXIT);
+        player->ADD_GOSSIP_ITEM(GOSSIP_ICON_DOT, TXT_KTHXBY, GOSSIP_SENDER_MAIN, CUSTOM_OPTION_EXIT);
+        player->PlayerTalkClass->SendGossipMenu(9425, me->GetGUID());
+        return (true);
+    }
+
+    bool OnGossipSelect(Player* player, Creature* /*me*/, uint32 /*uiSender*/, uint32 /*uiAction*/) 
+    {
+        player->PlayerTalkClass->SendCloseGossip();
+        return (true);
+    }
+};
+
 void AddSC_cyclone_customs() 
 {
+    new title_vendor();
+    new title_npc();
     new squirel_pew_pew();
     new profession_npc();
     new suffix_npc();
