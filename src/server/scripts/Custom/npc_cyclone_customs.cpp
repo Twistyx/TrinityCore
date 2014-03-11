@@ -1,8 +1,8 @@
 #include "ScriptPCH.h"
 #include "ItemEnchantmentMgr.h"
 
-#define ELEM_COUNT     25 // Amount of items showed per page
 #define TITLE_REWARDED  47 // title "The Conqueror"
+#define ELEM_COUNT      25 // Amount of enchants showed per page
 #define TXT_PREV_PG     "<- Previous page"
 #define TXT_GO_BACK     "<-- back to item list"
 #define TXT_NEXT_PG     "Next page ->"
