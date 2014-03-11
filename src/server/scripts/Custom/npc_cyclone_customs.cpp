@@ -472,6 +472,25 @@ public:
     }
 };
 
+class npc_teleport_donation : public CreatureScript {
+public:
+    npc_teleport_donation() : CreatureScript("npc_teleport_donation"){ }
+    bool OnGossipHello(Player *player, Creature * m_creature) {
+        player->ADD_GOSSIP_ITEM(3, "Bring me to the Donation Vendors", GOSSIP_SENDER_MAIN, 0);
+        player->ADD_GOSSIP_ITEM(4, "Nevermind",                        GOSSIP_SENDER_MAIN, 150);
+        player->SEND_GOSSIP_MENU(1, m_creature->GetGUID());
+        return (true);
+    }
+ 
+    bool OnGossipSelect(Player *player, Creature * /*me*/, uint32 /*from*/, uint32 action) {
+        if (action == 0)
+            player->TeleportTo(43, 118.367088f, 239.832443f, -96.010773f, 6.237127f);
+        else if (action == 150)
+            player->CLOSE_GOSSIP_MENU();
+        return (true);
+    }
+};
+
 class npc_teleport_guard : public CreatureScript {
 public:
     npc_teleport_guard() : CreatureScript("npc_teleport_guard") {}
@@ -528,4 +547,5 @@ void AddSC_cyclone_customs()
     new profession_npc();
     new suffix_npc();
     new npc_teleport_guard();
+    new npc_teleport_donation();
 }
