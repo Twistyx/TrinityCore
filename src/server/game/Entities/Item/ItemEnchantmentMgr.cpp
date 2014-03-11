@@ -77,6 +77,100 @@ void LoadRandomEnchantmentsTable()
         TC_LOG_ERROR(LOG_FILTER_SERVER_LOADING, ">> Loaded 0 Item Enchantment definitions. DB table `item_enchantment_template` is empty.");
 }
 
+static std::string AddToId(const char *str)
+{
+    std::stringstream ss;
+
+    while (*str)
+    {
+        if (*str != '+' && *str != ' ' && (*str < '0' || *str > '9'))
+            ss << *str;
+        str++;
+    }
+    return (ss.str());
+}
+
+_EnchGossipList GetAllItemEnchant(int32 entry)
+{
+    _EnchGossipList ench;
+
+    bool isSuffix = false;
+    if (entry < 0)
+    {
+        entry = -entry;
+        isSuffix = true;
+    }
+
+    EnchantmentStore::const_iterator tab = RandomItemEnch.find(entry);
+    for (EnchStoreList::const_iterator ench_iter = tab->second.begin(); ench_iter != tab->second.end(); ++ench_iter)
+    {
+        if (ench_iter->chance <= 0.1f)
+            continue;
+        _EnchantementGossipList elem;
+        std::stringstream description;
+        std::stringstream id;
+        elem.ench = ench_iter->ench;
+        elem.value = 0;
+        bool add = true;
+        if (isSuffix)
+        {
+            description << "..." << sItemRandomSuffixStore.LookupEntry(ench_iter->ench)->nameSuffix[LOCALE_enUS];
+            id << description;
+        }
+        else
+        {
+            ItemRandomPropertiesEntry const* property = sItemRandomPropertiesStore.LookupEntry(ench_iter->ench);
+
+            for (int k = 0; k < MAX_ITEM_ENCHANTMENT_EFFECTS; ++k)
+            {
+                if (property->enchant_id[k])
+                {
+                    SpellItemEnchantmentEntry const* pEnchant = sSpellItemEnchantmentStore.LookupEntry(property->enchant_id[k]);
+                    if (pEnchant)
+                    {
+                        uint32 amount = pEnchant->amount[0] + pEnchant->amount[1] + pEnchant->amount[2];
+                        description << *pEnchant->description << ' ';
+                        if ((pEnchant->spellid[0] >= 2) && (pEnchant->spellid[0] <= 11))
+                        {
+                            if (!elem.value || elem.value > 10000)
+                            {
+                                id << AddToId(*pEnchant->description);
+                                if (k == 1  && elem.value != amount + 10000)
+                                    continue;
+                            }
+                            elem.value += amount + 10000;
+                        }
+                        else
+                        {
+                            id << AddToId(*pEnchant->description);
+                            elem.value += (amount) ? amount : atoi(*pEnchant->description);
+                        }
+                    }
+                }
+            }
+        }
+        elem.description = description.str();
+        elem.id = id.str();
+        for (_EnchGossipList::iterator it = ench.begin(); (it != ench.end() && !isSuffix); ++it)
+        {
+            if (it->id.compare(elem.id) == 0)
+            {
+                if (elem.value >= it->value)
+                {
+                    it->value = elem.value;
+                    it->ench = elem.ench;
+                    it->description = elem.description;
+                }
+                add = false;
+                break;
+            }
+        }
+        if (add)
+            ench.push_back(elem);
+    }
+    return ench;
+}
+
 uint32 GetItemEnchantMod(int32 entry)
 {
     if (!entry)

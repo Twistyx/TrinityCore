@@ -17,6 +17,7 @@ set(scripts_STAT_SRCS
   Custom/enchanter.cpp
   Custom/npc_title.cpp
   Custom/Npc_Beastmaster.cpp
+  Custom/npc_cyclone_customs.cpp
 )
 
 message("  -> Prepared: Custom")

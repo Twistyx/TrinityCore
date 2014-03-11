@@ -21,7 +21,18 @@
 
 #include "Common.h"
 
+
+struct _EnchantementGossipList
+{
+    int32           ench;
+    uint32          value;
+    std::string     id;
+    std::string     description;
+};
+typedef std::vector<_EnchantementGossipList> _EnchGossipList;
+
 void LoadRandomEnchantmentsTable();
+_EnchGossipList GetAllItemEnchant(int32 entry);
 uint32 GetItemEnchantMod(int32 entry);
 uint32 GenerateEnchSuffixFactor(uint32 item_id);
 #endif

@@ -27,6 +27,8 @@
 #include "UpdateData.h"
 #include "ObjectAccessor.h"
 #include "SpellInfo.h"
+#include "ScriptMgr.h"
+#include "CreatureAI.h"
 
 void WorldSession::HandleSplitItemOpcode(WorldPacket& recvData)
 {
@@ -681,8 +683,18 @@ void WorldSession::HandleBuyItemInSlotOpcode(WorldPacket& recvData)
     // bag not found, cheating?
     if (bag == NULL_BAG)
         return;
-
-    GetPlayer()->BuyItemFromVendorSlot(vendorguid, slot, item, count, bag, bagslot);
+    ItemTemplate const* pProto = sObjectMgr->GetItemTemplate(item);
+    if (pProto->RandomProperty || pProto->RandomSuffix)
+    {
+        Creature* creature = _player->GetNPCIfCanInteractWith(vendorguid, UNIT_NPC_FLAG_VENDOR);
+        if (creature)
+        {
+            //to do : A check if the AI == custom AI
+            item |= (slot << 24); // add slot value to the last 8 bits of item.
+            sScriptMgr->OnGossipSelect(_player, creature, item, 27);
+        }
+    }
+    GetPlayer()->BuyItemFromVendorSlot(vendorguid, slot, item, count, bag, bagslot, 0);
 }
 
 void WorldSession::HandleBuyItemOpcode(WorldPacket& recvData)
@@ -699,8 +711,19 @@ void WorldSession::HandleBuyItemOpcode(WorldPacket& recvData)
         --slot;
     else
         return; // cheating
-
-    GetPlayer()->BuyItemFromVendorSlot(vendorguid, slot, item, count, NULL_BAG, NULL_SLOT);
+    ItemTemplate const* pProto = sObjectMgr->GetItemTemplate(item);
+    if (pProto->RandomProperty || pProto->RandomSuffix)
+    {
+        Creature* creature = _player->GetNPCIfCanInteractWith(vendorguid, UNIT_NPC_FLAG_VENDOR);
+        if (creature)
+        {
+            //to do : A check if the AI == custom AI
+            item |= (slot << 24); // add slot value to the last 8 bits of item.
+            sScriptMgr->OnGossipSelect(_player, creature, item, 27);
+        }
+    }
+    else
+        GetPlayer()->BuyItemFromVendorSlot(vendorguid, slot, item, count, NULL_BAG, NULL_SLOT, 0);
 }
 
 void WorldSession::HandleListInventoryOpcode(WorldPacket& recvData)
