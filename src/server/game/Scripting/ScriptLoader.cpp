@@ -685,7 +685,7 @@ void AddSC_npc_changer();
 void AddSC_npc_suffixvendor();
 void AddSC_enchanter();
 void AddSC_TitleNpc();
-void AddSC_npc_Beastmaster();
+void AddSC_npc_beastmaster();
 void AddSC_cyclone_customs();
 
 #endif
@@ -1414,7 +1414,6 @@ void AddCustomScripts()
 	AddSC_npc_suffixvendor();
 	AddSC_enchanter();
 	AddSC_TitleNpc();
-	AddSC_Npc_Beastmaster();
 	AddSC_npc_beastmaster();
 	AddSC_cyclone_customs();
 #endif
