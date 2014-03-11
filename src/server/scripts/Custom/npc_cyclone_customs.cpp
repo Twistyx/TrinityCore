@@ -189,10 +189,10 @@ static uint32 GetTotalTokens(Player* Player)
     return (0);
 }
 
-class suffix_npc : public CreatureScript 
+class npc_suffix : public CreatureScript 
 {
 public:
-suffix_npc() : CreatureScript("suffix_npc") { }
+npc_suffix() : CreatureScript("npc_suffix") { }
     bool OnGossipHello(Player *player, Creature *me) 
     {
         player->PlayerTalkClass->ClearMenus();
@@ -218,10 +218,10 @@ suffix_npc() : CreatureScript("suffix_npc") { }
     }
 };
 
-class profession_npc : public CreatureScript 
+class npc_profession : public CreatureScript 
 {
 public:
-    profession_npc() : CreatureScript("profession_npc") {}
+    npc_profession() : CreatureScript("npc_profession") {}
 
     bool LearnAllRecipesInProfession(Player* player, SkillType skill)
     {
@@ -310,10 +310,10 @@ public:
     }
 };
 
-class squirel_pew_pew : public CreatureScript 
+class npc_squirel : public CreatureScript 
 {
 public:
-    squirel_pew_pew() : CreatureScript("squirel_pew_pew") {}
+    npc_squirel() : CreatureScript("npc_squirel") {}
 
     bool OnGossipHello(Player* player, Creature* me)
     {
@@ -356,10 +356,10 @@ public:
     }
 };
 
-class title_vendor : public CreatureScript 
+class npc_title_vendor : public CreatureScript 
 {
 public:
-    title_vendor() : CreatureScript("title_vendor") {}
+    npc_title_vendor() : CreatureScript("npc_title_vendor") {}
 
     uint16 NeededToken(uint32 rank) 
     {
@@ -418,10 +418,10 @@ public:
     }
 };
 
-class title_npc : public CreatureScript 
+class npc_title_giver : public CreatureScript 
 {
 public:
-    title_npc() : CreatureScript("title_npc") {}
+    npc_title_giver() : CreatureScript("npc_title_giver") {}
 
     void RewardTitles(Player *player, uint8 *nextTitle, uint16 *reqTokens, const uint16 totalTokens, const uint8 faction)
     {
@@ -541,11 +541,11 @@ public:
 
 void AddSC_cyclone_customs() 
 {
-    new title_vendor();
-    new title_npc();
-    new squirel_pew_pew();
-    new profession_npc();
-    new suffix_npc();
+    new npc_title_vendor();
+    new npc_title_giver();
+    new npc_squirel();
+    new npc_profession();
+    new npc_suffix();
     new npc_teleport_guard();
     new npc_teleport_donation();
 }
