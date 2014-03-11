@@ -680,11 +680,7 @@ void AddSC_chat_log();
 
 // customs
 /* This is where custom scripts' loading functions should be declared. */
-void AddSC_Professions_NPC();
 void AddSC_npc_changer();
-void AddSC_npc_suffixvendor();
-void AddSC_enchanter();
-void AddSC_TitleNpc();
 void AddSC_npc_beastmaster();
 void AddSC_cyclone_customs();
 
@@ -1409,11 +1405,7 @@ void AddCustomScripts()
 {
 #ifdef SCRIPTS
 /* This is where custom scripts' loading functions should be declared. */
-	AddSC_Professions_NPC();
 	AddSC_npc_changer();
-	AddSC_npc_suffixvendor();
-	AddSC_enchanter();
-	AddSC_TitleNpc();
 	AddSC_npc_beastmaster();
 	AddSC_cyclone_customs();
 #endif

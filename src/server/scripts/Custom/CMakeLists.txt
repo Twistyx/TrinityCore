@@ -10,12 +10,7 @@
 
 set(scripts_STAT_SRCS
   ${scripts_STAT_SRCS}
-  Custom/my_test_script.cpp
-  Custom/Professions_NPC.cpp
   Custom/npc_changer.cpp
-  Custom/npc_suffixvendor.cpp
-  Custom/enchanter.cpp
-  Custom/npc_title.cpp
   Custom/npc_beastmaster.cpp
   Custom/npc_cyclone_customs.cpp
 )
