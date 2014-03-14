@@ -2376,7 +2376,11 @@ void Player::ProcessDelayedOperations()
         SaveToDB();
 
     if (m_DelayedOperations & DELAYED_SPELL_CAST_DESERTER)
-        CastSpell(this, 26013, true);               // Deserter
+    {
+        Aura* aura = AddAura(26013, this);
+        if (aura)
+            aura->SetDuration(5 * MINUTE * IN_MILLISECONDS);
+    }
 
     if (m_DelayedOperations & DELAYED_BG_MOUNT_RESTORE)
     {
@@ -22055,8 +22059,10 @@ void Player::LeaveBattleground(bool teleportToEntryPoint)
                     ScheduleDelayedOperation(DELAYED_SPELL_CAST_DESERTER);
                     return;
                 }
-
-                CastSpell(this, 26013, true);               // Deserter
+                
+                Aura* aura = AddAura(26013, this);
+                if (aura)
+                    aura->SetDuration(5 * MINUTE * IN_MILLISECONDS);
             }
         }
     }
