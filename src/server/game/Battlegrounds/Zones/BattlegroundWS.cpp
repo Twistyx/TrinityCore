@@ -64,30 +64,30 @@ void BattlegroundWS::PostUpdateImpl(uint32 diff)
 {
     if (GetStatus() == STATUS_IN_PROGRESS)
     {
-        //if (GetStartTime() >= 27*MINUTE*IN_MILLISECONDS)
-        //{
-        //    if (GetTeamScore(TEAM_ALLIANCE) == 0)
-        //    {
-        //        if (GetTeamScore(TEAM_HORDE) == 0)        // No one scored - result is tie
-        //            EndBattleground(WINNER_NONE);
-        //        else                                 // Horde has more points and thus wins
-        //            EndBattleground(HORDE);
-        //    }
-        //    else if (GetTeamScore(TEAM_HORDE) == 0)
-        //        EndBattleground(ALLIANCE);           // Alliance has > 0, Horde has 0, alliance wins
-        //    else if (GetTeamScore(TEAM_HORDE) == GetTeamScore(TEAM_ALLIANCE)) // Team score equal, winner is team that scored the last flag
-        //        EndBattleground(_lastFlagCaptureTeam);
-        //    else if (GetTeamScore(TEAM_HORDE) > GetTeamScore(TEAM_ALLIANCE))  // Last but not least, check who has the higher score
-        //        EndBattleground(HORDE);
-        //    else
-        //        EndBattleground(ALLIANCE);
-        //}
+        if (GetStartTime() >= 27*MINUTE*IN_MILLISECONDS)
+        {
+            if (GetTeamScore(TEAM_ALLIANCE) == 0)
+            {
+                if (GetTeamScore(TEAM_HORDE) == 0)        // No one scored - result is tie
+                    EndBattleground(WINNER_NONE);
+                else                                 // Horde has more points and thus wins
+                    EndBattleground(HORDE);
+            }
+            else if (GetTeamScore(TEAM_HORDE) == 0)
+                EndBattleground(ALLIANCE);           // Alliance has > 0, Horde has 0, alliance wins
+            else if (GetTeamScore(TEAM_HORDE) == GetTeamScore(TEAM_ALLIANCE)) // Team score equal, winner is team that scored the last flag
+                EndBattleground(_lastFlagCaptureTeam);
+            else if (GetTeamScore(TEAM_HORDE) > GetTeamScore(TEAM_ALLIANCE))  // Last but not least, check who has the higher score
+                EndBattleground(HORDE);
+            else
+                EndBattleground(ALLIANCE);
+        }
         // first update needed after 1 minute of game already in progress
-        //else if (GetStartTime() > uint32(_minutesElapsed * MINUTE * IN_MILLISECONDS) +  3 * MINUTE * IN_MILLISECONDS)
-        //{
-        //    ++_minutesElapsed;
-            //UpdateWorldState(BG_WS_STATE_TIMER, 2880 - _minutesElapsed);
-        //}
+        else if (GetStartTime() > uint32(_minutesElapsed * MINUTE * IN_MILLISECONDS) +  3 * MINUTE * IN_MILLISECONDS)
+        {
+            ++_minutesElapsed;
+            UpdateWorldState(BG_WS_STATE_TIMER, 25 - _minutesElapsed);
+        }
 
         if (_flagState[TEAM_ALLIANCE] == BG_WS_FLAG_STATE_WAIT_RESPAWN)
         {
@@ -190,8 +190,8 @@ void BattlegroundWS::StartingEventCloseDoors()
     for (uint32 i = BG_WS_OBJECT_A_FLAG; i <= BG_WS_OBJECT_BERSERKBUFF_2; ++i)
         SpawnBGObject(i, RESPAWN_ONE_DAY);
 
-    //UpdateWorldState(BG_WS_STATE_TIMER_ACTIVE, 1);
-    //UpdateWorldState(BG_WS_STATE_TIMER, 2880);
+    UpdateWorldState(BG_WS_STATE_TIMER_ACTIVE, 1);
+    UpdateWorldState(BG_WS_STATE_TIMER, 25);
 }
 
 void BattlegroundWS::StartingEventOpenDoors()
@@ -351,7 +351,7 @@ void BattlegroundWS::EventPlayerCapturedFlag(Player* player)
         UpdateWorldState(BG_WS_FLAG_UNK_HORDE, 0);
         UpdateWorldState(BG_WS_FLAG_STATE_ALLIANCE, 1);
         UpdateWorldState(BG_WS_FLAG_STATE_HORDE, 1);
-        //UpdateWorldState(BG_WS_STATE_TIMER_ACTIVE, 0);
+        UpdateWorldState(BG_WS_STATE_TIMER_ACTIVE, 0);
 
         RewardHonorToTeam(BG_WSG_Honor[m_HonorMode][BG_WSG_WIN], winner);
         EndBattleground(winner);
@@ -742,7 +742,7 @@ void BattlegroundWS::Reset()
         m_HonorWinKills = 1;
         m_HonorEndKills = 2;
     }
-    //_minutesElapsed                  = 0;
+    _minutesElapsed                  = 0;
     _lastFlagCaptureTeam             = 0;
     _bothFlagsKept                   = false;
     _flagDebuffState                 = 0;
@@ -855,7 +855,7 @@ void BattlegroundWS::FillInitialWorldStates(WorldPacket& data)
     if (GetStatus() == STATUS_IN_PROGRESS)
     {
         data << uint32(BG_WS_STATE_TIMER_ACTIVE) << uint32(1);
-        data << uint32(BG_WS_STATE_TIMER) << uint32(2880/*-_minutesElapsed*/);
+        data << uint32(BG_WS_STATE_TIMER) << uint32(25-_minutesElapsed);
     }
     else
         data << uint32(BG_WS_STATE_TIMER_ACTIVE) << uint32(0);
