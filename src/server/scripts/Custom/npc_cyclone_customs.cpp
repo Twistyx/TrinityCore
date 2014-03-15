@@ -1,5 +1,6 @@
 #include "ScriptPCH.h"
 #include "ItemEnchantmentMgr.h"
+#include "Language.h"
 
 #define H_X             -1258.48f
 #define H_Y             63.53f
@@ -543,8 +544,40 @@ public:
     }
 };
 
+class npc_talent : public CreatureScript
+{
+public:
+    npc_talent() : CreatureScript("npc_talent"){ }
+ 
+    bool OnGossipHello(Player *player, Creature * m_creature)
+    {
+        player->ADD_GOSSIP_ITEM(4, "Reset my talents.", GOSSIP_SENDER_MAIN, 3);
+        player->ADD_GOSSIP_ITEM(GOSSIP_ICON_DOT, TXT_KTHXBY, GOSSIP_SENDER_MAIN, 1000);
+        player->SEND_GOSSIP_MENU(1, m_creature->GetGUID());
+        return true;
+    }
+ 
+    bool OnGossipSelect(Player *player, Creature * m_creature, uint32 /*uiSender*/, uint32 uiAction)
+    {
+        (void)m_creature;
+        if(!player)
+            return true;
+
+        if (uiAction == 3)
+        {
+            player->resetTalents(true);
+            player->SendTalentsInfoData(false);
+            ChatHandler(player->GetSession()).SendSysMessage(LANG_RESET_TALENTS);
+            return true;
+        }
+        else
+            player->PlayerTalkClass->SendCloseGossip();
+        return true;
+    }
+};
 void AddSC_cyclone_customs() 
 {
+    new npc_talent();
     new npc_title_vendor();
     new npc_title_giver();
     new npc_squirel();

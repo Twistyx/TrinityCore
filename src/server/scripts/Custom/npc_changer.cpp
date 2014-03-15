@@ -12,7 +12,6 @@ public:
         player->ADD_GOSSIP_ITEM(4, "Change My Race ", GOSSIP_SENDER_MAIN, 0);
         player->ADD_GOSSIP_ITEM(4, "Change My Faction", GOSSIP_SENDER_MAIN, 1);
         player->ADD_GOSSIP_ITEM(4, "Customize me !", GOSSIP_SENDER_MAIN, 2);
-        player->ADD_GOSSIP_ITEM(4, "Reset my talents, I have no talents anyway !", GOSSIP_SENDER_MAIN, 3);
         player->ADD_GOSSIP_ITEM(GOSSIP_ICON_DOT, "Nevermind..", GOSSIP_SENDER_MAIN, 1000);
         player->SEND_GOSSIP_MENU(1, m_creature->GetGUID());
         return true;
@@ -44,13 +43,6 @@ public:
             player->SetAtLoginFlag(AT_LOGIN_CUSTOMIZE);
             stmt->setUInt32(1, player->GetGUIDLow());
             CharacterDatabase.Execute(stmt);
-        }
-        else if (uiAction == 3)
-        {
-            player->resetTalents(true);
-            player->SendTalentsInfoData(false);
-            ChatHandler(player->GetSession()).SendSysMessage(LANG_RESET_TALENTS);
-            return true;
         }
         else
             player->PlayerTalkClass->SendCloseGossip();
