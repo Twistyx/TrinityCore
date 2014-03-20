@@ -683,6 +683,7 @@ void AddSC_chat_log();
 void AddSC_npc_changer();
 void AddSC_npc_beastmaster();
 void AddSC_cyclone_customs();
+void AddSC_cs_world_chat();
 
 #endif
 
@@ -1408,6 +1409,7 @@ void AddCustomScripts()
 	AddSC_npc_changer();
 	AddSC_npc_beastmaster();
 	AddSC_cyclone_customs();
+	AddSC_cs_world_chat();
 #endif
 }
 
