@@ -1060,6 +1060,7 @@ void Unit::CalculateSpellDamageTaken(SpellNonMeleeDamage* damageInfo, int32 dama
         default:
             break;
     }
+    damage = ApplyCustomArenaBalance(damageInfo->target, damageInfo->attacker, damage);
 
     // Script Hook For CalculateSpellDamageTaken -- Allow scripts to change the Damage post class mitigation calculations
     sScriptMgr->ModifySpellDamageTaken(damageInfo->target, damageInfo->attacker, damage);
@@ -1285,6 +1286,11 @@ void Unit::CalculateMeleeDamage(Unit* victim, uint32 damage, CalcDamageInfo* dam
     else
         ApplyResilience(victim, NULL, &resilienceReduction, (damageInfo->hitOutCome == MELEE_HIT_CRIT), CR_CRIT_TAKEN_RANGED);
     resilienceReduction = damageInfo->damage - resilienceReduction;
+    damageInfo->damage      -= resilienceReduction;
+    damageInfo->cleanDamage += resilienceReduction;
+
+    //Apply custom balance on white damages.
+    resilienceReduction = damageInfo->damage - ApplyCustomArenaBalance(damageInfo->target, damageInfo->attacker, damageInfo->damage);
     damageInfo->damage      -= resilienceReduction;
     damageInfo->cleanDamage += resilienceReduction;
 
@@ -11133,6 +11139,119 @@ bool Unit::IsImmunedToSpellEffect(SpellInfo const* spellInfo, uint32 index) cons
     }
 
     return false;
+}
+
+uint32 Unit::ApplyCustomArenaBalance(Unit* victim, Unit* attacker, uint32 value)
+{
+    Player* plrVictim;
+    if (victim->GetTypeId() == TYPEID_PLAYER)
+    {
+        switch (victim->getClass())
+        {
+            case CLASS_SHAMAN:
+                value *= 1.05f;
+                break ;
+            case CLASS_ROGUE:
+            case CLASS_MAGE:
+                value *= 0.95f;
+                break ;
+            default:
+                break ;
+        }
+        plrVictim = victim->ToPlayer();
+    }
+    else if (victim->ToCreature()->IsPet() && victim->GetOwner()->GetTypeId() == TYPEID_PLAYER)
+        plrVictim = victim->GetOwner()->ToPlayer();
+    else
+        return value;
+
+    switch (attacker->getClass())
+    {
+        case CLASS_SHAMAN:
+            value *= 0.90f;
+            break ;
+        case CLASS_WARLOCK:
+        case CLASS_HUNTER:
+            value *= 0.95f;
+            break ;
+        case CLASS_MAGE:
+        case CLASS_DRUID:
+            value *= 1.05f;
+            break ;
+        default:
+            break ;
+    }
+
+    if (!plrVictim->InArena())
+        return value;
+
+    Battleground* bg = plrVictim->GetBattleground();
+    if (!bg)
+        return value;
+
+    Group* group = bg->GetBgRaid(bg->GetOtherTeam(bg->GetPlayerTeam(plrVictim->GetGUID())));
+    if (!group)
+        return value;
+
+    uint32 teamClassMask = 0;
+    for (GroupReference* itr = group->GetFirstMember(); itr != NULL; itr = itr->next())
+    {
+        Player* member = itr->GetSource();
+        if (!member)
+            continue;
+        teamClassMask |= member->getClassMask();
+    }
+
+    switch (bg->GetArenaType())
+    {
+        case ARENA_TYPE_2v2:
+        {
+            switch (teamClassMask)
+            {
+                case 1:    // War only
+                case 8:    // Rogue only
+                case 9:    // Rogue + War
+                case 128:  // Mage only
+                    return value * 1.05f;
+                case 258:  // Paladin + Warlock
+                case 1280: // Warlock + Druid
+                    return value * 0.95f; // -5%
+                case 20:  // Hunter  + Priest
+                case 65:  // Warrior + Shaman
+                case 64:  // Shaman only
+                case 192: // Shaman  + Mage
+                case 272: // Priest  + Warlock
+                    return value * 0.9f; // -10%
+                case 68:  // Hunter  + Shaman
+                case 320: // Warlock + Shaman
+                    return value * 0.8f; // -20%
+                default:
+                break ;
+            }
+        }
+        break ;
+
+        case ARENA_TYPE_3v3:
+        {
+            if ((teamClassMask & 68) || (teamClassMask & 320))
+                return value * 0.8f; // -20%
+        }
+        break ;
+
+        case ARENA_TYPE_5v5:
+        {
+            switch (teamClassMask)
+            {
+                default:
+                    break ;
+            }
+        }
+        break ;
+
+        default:
+        break ;
+    }
+    return value;
 }
 
 uint32 Unit::MeleeDamageBonusDone(Unit* victim, uint32 pdamage, WeaponAttackType attType, SpellInfo const* spellProto)
