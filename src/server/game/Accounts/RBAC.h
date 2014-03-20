@@ -680,6 +680,7 @@ enum RBACPermissions
     RBAC_PERM_COMMAND_WP_SHOW                                = 774,
 
     // custom permissions 1000+
+    RBAC_PERM_COMMAND_WORLD_CHAT                             = 1009,
     RBAC_PERM_MAX
 };
 
