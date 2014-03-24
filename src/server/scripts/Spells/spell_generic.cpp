@@ -3648,31 +3648,34 @@ class spell_gen_shadowmeld : public SpellScriptLoader
                 caster->InterruptSpell(CURRENT_AUTOREPEAT_SPELL); // break Auto Shot and autohit
                 caster->InterruptSpell(CURRENT_CHANNELED_SPELL); // break channeled spells
  
-                bool instant_exit = true;
-                if (Player *pCaster = caster->ToPlayer()) // if is a creature instant exits combat, else check if someone in party is in combat in visibility distance
+                Player *pCaster = caster->ToPlayer();
+                if (!pCaster)
+                    return;
+
+                UnitList targets;
+                Trinity::AnyUnfriendlyUnitInObjectRangeCheck u_check(caster, caster, caster->GetMap()->GetVisibilityRange());
+                Trinity::UnitListSearcher<Trinity::AnyUnfriendlyUnitInObjectRangeCheck> searcher(caster, targets, u_check);
+                caster->VisitNearbyObject(caster->GetMap()->GetVisibilityRange(), searcher);
+                for (UnitList::iterator iter = targets.begin(); iter != targets.end(); ++iter)
                 {
-                    uint64 myGUID = pCaster->GetGUID();
-                    float visibilityRange = pCaster->GetMap()->GetVisibilityRange();
-                    if (Group *pGroup = pCaster->GetGroup())
+                    if (!(*iter)->HasUnitState(UNIT_STATE_CASTING))
+                        continue;
+
+                    for (uint32 i = CURRENT_FIRST_NON_MELEE_SPELL; i < CURRENT_MAX_SPELL; i++)
                     {
-                        const Group::MemberSlotList membersList = pGroup->GetMemberSlots();
-                        for (Group::member_citerator itr=membersList.begin(); itr!=membersList.end() && instant_exit; ++itr)
-                            if (itr->guid != myGUID)
-                                if (Player *GroupMember = Unit::GetPlayer(*pCaster, itr->guid))
-                                    if (GroupMember->IsInCombat() && pCaster->GetMap()==GroupMember->GetMap() && pCaster->IsWithinDistInMap(GroupMember, visibilityRange))
-                                        instant_exit = false;
+                        if ((*iter)->GetCurrentSpell(i) && (*iter)->GetCurrentSpell(i)->m_targets.GetUnitTargetGUID() == caster->GetGUID())
+                            (*iter)->InterruptSpell(CurrentSpellTypes(i), false);
                     }
- 
-                    pCaster->SendAttackSwingCancelAttack();
                 }
- 
-                if (!caster->GetInstanceScript() || !caster->GetInstanceScript()->IsEncounterInProgress()) //Don't leave combat if you are in combat with a boss
-                {
-                    if (!instant_exit)
-                        caster->getHostileRefManager().deleteReferences(); // exit combat after 6 seconds
-                    else 
-                        caster->CombatStop(); // isn't necessary to call AttackStop because is just called in CombatStop
-                }
+
+                caster->CombatStop(); // isn't necessary to call AttackStop because is just called in CombatStop
+                pCaster->SendAttackSwingCancelAttack();
+                caster->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_IMMUNE_OR_LOST_SELECTION);
+
+                if (caster->GetCurrentSpell(CURRENT_GENERIC_SPELL))
+                    caster->FinishSpell(CURRENT_GENERIC_SPELL, false);
+                caster->InterruptNonMeleeSpells(true);
+                caster->getHostileRefManager().deleteReferences();
             }
  
             void Register()
