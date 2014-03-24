@@ -11143,6 +11143,34 @@ bool Unit::IsImmunedToSpellEffect(SpellInfo const* spellInfo, uint32 index) cons
 
 uint32 Unit::ApplyCustomArenaBalance(Unit* victim, Unit* attacker, uint32 value)
 {
+    if (!value)
+        return value;
+
+    if (attacker->GetTypeId() == TYPEID_UNIT)
+    {
+        if ((attacker->GetMapId() == 309) &&(!(attacker->ToCreature()->IsPet() && attacker->GetOwner()->GetTypeId() == TYPEID_PLAYER)))
+            value = (value / 22.07f) + 1;
+    }
+    else
+    {
+        switch (attacker->getClass())
+        {
+            case CLASS_SHAMAN:
+                value *= 0.90f;
+                break ;
+            case CLASS_WARLOCK:
+            case CLASS_HUNTER:
+                value *= 0.95f;
+                break ;
+            case CLASS_MAGE:
+            case CLASS_DRUID:
+                value *= 1.05f;
+                break ;
+            default:
+                break ;
+        }
+    }
+
     Player* plrVictim;
     if (victim->GetTypeId() == TYPEID_PLAYER)
     {
@@ -11163,23 +11191,11 @@ uint32 Unit::ApplyCustomArenaBalance(Unit* victim, Unit* attacker, uint32 value)
     else if (victim->ToCreature()->IsPet() && victim->GetOwner()->GetTypeId() == TYPEID_PLAYER)
         plrVictim = victim->GetOwner()->ToPlayer();
     else
-        return value;
-
-    switch (attacker->getClass())
     {
-        case CLASS_SHAMAN:
-            value *= 0.90f;
-            break ;
-        case CLASS_WARLOCK:
-        case CLASS_HUNTER:
-            value *= 0.95f;
-            break ;
-        case CLASS_MAGE:
-        case CLASS_DRUID:
-            value *= 1.05f;
-            break ;
-        default:
-            break ;
+        if (victim->GetMapId() != 309) // map 309
+            return value;
+
+        return (value * 25.03f);
     }
 
     if (!plrVictim->InArena())
@@ -11226,30 +11242,30 @@ uint32 Unit::ApplyCustomArenaBalance(Unit* victim, Unit* attacker, uint32 value)
                 case 320: // Warlock + Shaman
                     return value * 0.8f; // -20%
                 default:
-                break ;
+                    break ;
             }
+            break;
         }
-        break ;
 
         case ARENA_TYPE_3v3:
         {
             if ((teamClassMask & 68) || (teamClassMask & 320))
                 return value * 0.8f; // -20%
+            break;
         }
-        break ;
 
         case ARENA_TYPE_5v5:
         {
             switch (teamClassMask)
             {
                 default:
-                    break ;
+                    break;
             }
+            break;
         }
-        break ;
 
         default:
-        break ;
+            break ;
     }
     return value;
 }
