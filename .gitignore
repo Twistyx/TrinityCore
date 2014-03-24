@@ -20,3 +20,4 @@ CMakeLists.txt.user
 RubenServ.sublime-project
 RubenServ.sublime-workspace
 sftp-config.json
+src/server/scripts/Custom/npc_top_arena_broken.cpp

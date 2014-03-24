@@ -3577,7 +3577,7 @@ void Spell::SendSpellCooldown()
     Player* _player = m_caster->ToPlayer();
     if (!_player)
         return;
-
+//
     // mana/health/etc potions, disabled by client (until combat out as declarate)
     if (m_CastItem && m_CastItem->IsPotion())
     {

@@ -25041,6 +25041,11 @@ void Player::LearnTalent(uint32 talentId, uint32 talentRank)
         return;
     }
 
+    //if (spellid == 16287)
+    //{
+    //    ChatHandler(GetSession()).PSendSysMessage("We limited this talent to rank 1 for balance purposes.");
+    //    return;
+    //}
     // already known
     if (HasSpell(spellid))
         return;
@@ -26517,3 +26522,21 @@ Pet* Player::SummonPet(uint32 entry, float x, float y, float z, float ang, PetTy
 
     return pet;
 }
+    /* Better Morph preparation :
+        Gnome (Female) - 20320
+        Human (Female) - 19724 (491)
+        Draenei (Female) - 20323
+
+        Human (Male) - 19723 (491)
+        Gnome (Male) - 20580
+        Dwarf (Male) - 20317 (63)
+        Night Elf (Male) - 20318 (1085)
+
+        Tauren (Male) - 20319
+        Troll (Male) - 20321
+        Blood Elf (Male) - 20578
+
+        Orc (Female) - 20316
+        Tauren (Female) - 20584
+        Blood Elf (Female) - 20322
+    */
