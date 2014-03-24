@@ -501,12 +501,17 @@ uint32 AuraEffect::CalculateAmountCalc(Unit* caster, Unit* target, uint32 damage
     switch (GetAuraType())
     {
         case SPELL_AURA_PERIODIC_DAMAGE:
+            if (!target || !caster)
+                break;
             damage = caster->SpellDamageBonusDone(target, GetSpellInfo(), damage, DOT, GetBase()->GetStackAmount());
             break;
         case SPELL_AURA_PERIODIC_HEAL:
-        case SPELL_AURA_OBS_MOD_HEALTH:
+        {
+            if (!target || !caster)
+                break;
             damage = caster->SpellHealingBonusDone(target, GetSpellInfo(), damage, DOT, GetBase()->GetStackAmount());
             break;
+        }
         default:
             break;
     }
