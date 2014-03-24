@@ -16009,7 +16009,7 @@ void Unit::RemoveCharmedBy(Unit* charmer)
 void Unit::RestoreFaction()
 {
     if (GetTypeId() == TYPEID_PLAYER)
-        ToPlayer()->setFactionForRace(getRace());
+        ToPlayer()->setFactionForRace(ToPlayer()->getORace());
     else
     {
         if (HasUnitTypeMask(UNIT_MASK_MINION))
@@ -16483,11 +16483,12 @@ uint32 Unit::GetModelForForm(ShapeshiftForm form) const
 {
     if (GetTypeId() == TYPEID_PLAYER)
     {
+        const uint8 race = ToPlayer()->getORace();
         switch (form)
         {
             case FORM_CAT:
                 // Based on Hair color
-                if (getRace() == RACE_NIGHTELF)
+                if (race == RACE_NIGHTELF)
                 {
                     uint8 hairColor = GetByteValue(PLAYER_BYTES, 3);
                     switch (hairColor)
@@ -16508,7 +16509,7 @@ uint32 Unit::GetModelForForm(ShapeshiftForm form) const
                     }
                 }
                 // Based on Skin color
-                else if (getRace() == RACE_TAUREN)
+                else if (race == RACE_TAUREN)
                 {
                     uint8 skinColor = GetByteValue(PLAYER_BYTES, 0);
                     // Male
@@ -16560,14 +16561,14 @@ uint32 Unit::GetModelForForm(ShapeshiftForm form) const
                             return 8571;
                     }
                 }
-                else if (Player::TeamForRace(getRace()) == ALLIANCE)
+                else if (Player::TeamForRace(race) == ALLIANCE)
                     return 892;
                 else
                     return 8571;
             case FORM_DIREBEAR:
             case FORM_BEAR:
                 // Based on Hair color
-                if (getRace() == RACE_NIGHTELF)
+                if (race == RACE_NIGHTELF)
                 {
                     uint8 hairColor = GetByteValue(PLAYER_BYTES, 3);
                     switch (hairColor)
@@ -16587,7 +16588,7 @@ uint32 Unit::GetModelForForm(ShapeshiftForm form) const
                     }
                 }
                 // Based on Skin color
-                else if (getRace() == RACE_TAUREN)
+                else if (race == RACE_TAUREN)
                 {
                     uint8 skinColor = GetByteValue(PLAYER_BYTES, 0);
                     // Male
@@ -16639,16 +16640,16 @@ uint32 Unit::GetModelForForm(ShapeshiftForm form) const
                             return 2289;
                     }
                 }
-                else if (Player::TeamForRace(getRace()) == ALLIANCE)
+                else if (Player::TeamForRace(race) == ALLIANCE)
                     return 2281;
                 else
                     return 2289;
             case FORM_FLIGHT:
-                if (Player::TeamForRace(getRace()) == ALLIANCE)
+                if (Player::TeamForRace(race) == ALLIANCE)
                     return 20857;
                 return 20872;
             case FORM_FLIGHT_EPIC:
-                if (Player::TeamForRace(getRace()) == ALLIANCE)
+                if (Player::TeamForRace(race) == ALLIANCE)
                     return 21243;
                 return 21244;
             default:
@@ -16665,13 +16666,14 @@ uint32 Unit::GetModelForForm(ShapeshiftForm form) const
             return formEntry->modelID_A;
         else
         {
-            if (Player::TeamForRace(getRace()) == ALLIANCE)
+            const uint8 race = ToPlayer()->getORace();
+            if (Player::TeamForRace(race) == ALLIANCE)
                 modelid = formEntry->modelID_A;
             else
                 modelid = formEntry->modelID_H;
 
             // If the player is horde but there are no values for the horde modelid - take the alliance modelid
-            if (!modelid && Player::TeamForRace(getRace()) == HORDE)
+            if (!modelid && Player::TeamForRace(race) == HORDE)
                 modelid = formEntry->modelID_A;
         }
     }
@@ -16681,7 +16683,13 @@ uint32 Unit::GetModelForForm(ShapeshiftForm form) const
 
 uint32 Unit::GetModelForTotem(PlayerTotemType totemType)
 {
-    switch (getRace())
+    uint8 race;
+    if (GetTypeId() == TYPEID_PLAYER)
+        race = ToPlayer()->getORace();
+    else
+        race = getRace();
+
+    switch (race)
     {
         case RACE_ORC:
         {
@@ -16728,6 +16736,7 @@ uint32 Unit::GetModelForTotem(PlayerTotemType totemType)
             }
             break;
         }
+        case RACE_HUMAN:
         case RACE_TAUREN:
         {
             switch (totemType)
@@ -16743,6 +16752,7 @@ uint32 Unit::GetModelForTotem(PlayerTotemType totemType)
             }
             break;
         }
+        case RACE_BLOODELF:
         case RACE_DRAENEI:
         {
             switch (totemType)
@@ -16755,6 +16765,21 @@ uint32 Unit::GetModelForTotem(PlayerTotemType totemType)
                     return 19075;
                 case SUMMON_TYPE_TOTEM_AIR:     // air
                     return 19071;
+            }
+            break;
+        }
+        default:
+        {
+            switch (totemType)
+            {
+                case SUMMON_TYPE_TOTEM_FIRE:    // fire
+                    return 30754;
+                case SUMMON_TYPE_TOTEM_EARTH:   // earth
+                    return 30753;
+                case SUMMON_TYPE_TOTEM_WATER:   // water
+                    return 30755;
+                case SUMMON_TYPE_TOTEM_AIR:     // air
+                    return 30736;
             }
             break;
         }

@@ -324,7 +324,6 @@ void BattlegroundWS::EventPlayerCapturedFlag(Player* player)
                                                             // Drop Horde Flag from Player
         ClearDebuff(player);
 
-        RewardReputationToTeam(890, m_ReputationCapture, ALLIANCE);
         if (_flagAntiCheatTimer[TEAM_ALLIANCE] < 45*IN_MILLISECONDS) // cheater !!
         {
             player->GetSession()->KickPlayer();
@@ -348,7 +347,6 @@ void BattlegroundWS::EventPlayerCapturedFlag(Player* player)
                                                             // Drop Alliance Flag from Player
         ClearDebuff(player);
 
-        RewardReputationToTeam(889, m_ReputationCapture, HORDE);
         if (_flagAntiCheatTimer[TEAM_HORDE] < 45*IN_MILLISECONDS)
         {
             player->GetSession()->KickPlayer();
@@ -368,6 +366,7 @@ void BattlegroundWS::EventPlayerCapturedFlag(Player* player)
 
     UpdateFlagState(player->GetTeam(), 1);                  // flag state none
 
+    RewardReputationToTeam(890, 889, m_ReputationCapture, player->GetTeam());
     //for flag capture is reward 2 honorable kills
     RewardHonorToTeam(GetBonusHonorFromKill(2), player->GetTeam());
 

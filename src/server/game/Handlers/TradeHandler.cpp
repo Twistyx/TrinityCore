@@ -644,8 +644,11 @@ void WorldSession::HandleInitiateTradeOpcode(WorldPacket& recvPacket)
 
     if (!sWorld->getBoolConfig(CONFIG_ALLOW_TWO_SIDE_TRADE) && pOther->GetTeam() !=_player->GetTeam())
     {
-        SendTradeStatus(TRADE_STATUS_WRONG_FACTION);
-        return;
+        if (!_player->InBattleground()) // for Cross faction BG, allow them to trade.
+        {
+            SendTradeStatus(TRADE_STATUS_WRONG_FACTION);
+            return;
+        }
     }
 
     if (!pOther->IsWithinDistInMap(_player, 10.0f, false))
