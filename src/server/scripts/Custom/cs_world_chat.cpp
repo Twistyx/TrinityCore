@@ -1,5 +1,6 @@
 #include "ScriptPCH.h"
 #include "Chat.h"
+#include "SocialMgr.h"
  
 #define FACTION_SPECIFIC 0
  
@@ -115,16 +116,21 @@ class cs_world_chat : public CommandScript
         }
                
         msg += args;
-        if (FACTION_SPECIFIC)
+        SessionMap sessions = sWorld->GetAllSessions();
+        for (SessionMap::iterator itr = sessions.begin(); itr != sessions.end(); ++itr)
         {
-            SessionMap sessions = sWorld->GetAllSessions();
-            for (SessionMap::iterator itr = sessions.begin(); itr != sessions.end(); ++itr)
-                if (Player* plr = itr->second->GetPlayer())
-                    if (plr->GetTeam() == player->GetTeam())
-                        sWorld->SendServerMessage(SERVER_MSG_STRING, msg.c_str(), plr);
+            Player* plr = itr->second->GetPlayer();
+            if (!plr)
+                continue;
+
+            //if (plr->GetTeam() != player->GetTeam() && FACTION_SPECIFIC)
+            //    continue;
+
+            if (plr->GetSocial()->HasIgnore(player->GetGUIDLow()))
+                continue;
+
+            sWorld->SendServerMessage(SERVER_MSG_STRING, msg.c_str(), plr);
         }
-        else
-            sWorld->SendServerMessage(SERVER_MSG_STRING, msg.c_str(), 0);
         return true;
     }
 };
