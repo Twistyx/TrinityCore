@@ -3405,7 +3405,23 @@ void Spell::handle_immediate()
     _handle_immediate_phase();
 
     for (std::list<TargetInfo>::iterator ihit= m_UniqueTargetInfo.begin(); ihit != m_UniqueTargetInfo.end(); ++ihit)
+    {
+        switch (m_spellInfo->Id)
+        {
+            case 118:
+            case 8122:
+            case 5782:
+            {
+                Unit* target = ObjectAccessor::GetUnit(*m_caster, ihit->targetGUID);
+                if (target)
+                    m_caster->CastSpell(target, 38505, true);
+                break;
+            }
+            default:
+                break;
+        }
         DoAllEffectOnTarget(&(*ihit));
+    }
 
     for (std::list<GOTargetInfo>::iterator ihit= m_UniqueGOTargetInfo.begin(); ihit != m_UniqueGOTargetInfo.end(); ++ihit)
         DoAllEffectOnTarget(&(*ihit));

@@ -2872,6 +2872,12 @@ void Unit::_DeleteRemovedAuras()
         delete m_removedAuras.front();
         m_removedAuras.pop_front();
     }
+
+    if (HasAura(38505))
+    {
+        if (!HasUnitState(UNIT_STATE_CONFUSED | UNIT_STATE_FLEEING))
+            RemoveAurasDueToSpell(38505);
+    }
 }
 
 void Unit::_UpdateSpells(uint32 time)
