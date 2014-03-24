@@ -707,11 +707,16 @@ void Battleground::RewardTokenToAll(const uint32 token1, const uint32 token2, co
         {
             if (!quest)
             {
-                uint32 team = itr->second.Team;
-                if (!team)
-                    team = player->GetTeam();
-                if (team == winner)
-                count = 3;
+                if (winner == 666)
+                    count = 2;
+                else if ((winner == HORDE) || (winner == ALLIANCE))
+                {
+                    uint32 team = itr->second.Team;
+                    if (!team)
+                        team = player->GetTeam();
+                    if (team == winner)
+                        count = 3;
+                }
                 if (token1)
                     player->AddItem(token1, count);
                 if (token2)
@@ -1817,8 +1822,23 @@ void Battleground::HandleTriggerBuff(uint64 go_guid)
                 index += buff;
             }
     }
-
-    SpawnBGObject(index, BUFF_RESPAWN_TIME);
+    if (GetTypeID() != BATTLEGROUND_WS)
+        SpawnBGObject(index, BUFF_RESPAWN_TIME);
+    else // Special case for WSG, regen is 30sec CD, Berserk 2min.
+    {
+        switch (obj->GetEntry())
+        {
+            case BG_OBJECTID_REGENBUFF_ENTRY:
+                SpawnBGObject(index, 30);
+                break;
+            case BG_OBJECTID_BERSERKERBUFF_ENTRY:
+                SpawnBGObject(index, 120);
+                break;
+            default:
+                SpawnBGObject(index, BUFF_RESPAWN_TIME);
+                break;
+        }
+    }
 }
 
 void Battleground::HandleKillPlayer(Player* victim, Player* killer)

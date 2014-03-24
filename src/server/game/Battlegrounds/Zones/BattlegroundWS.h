@@ -180,6 +180,9 @@ class BattlegroundWS : public Battleground
         void RespawnFlag(uint32 Team, bool captured);
         void RespawnFlagAfterDrop(uint32 Team);
         uint8 GetFlagState(uint32 team)             { return _flagState[GetTeamIndexByTeamId(team)]; }
+        uint8 GetFlagAura(const uint32 team)  { return ((team == TEAM_HORDE) ? BG_WS_SPELL_SILVERWING_FLAG : BG_WS_SPELL_WARSONG_FLAG); }
+        void ClearDebuff(Player *player);
+
 
         /* Battleground Events */
         void EventPlayerDroppedFlag(Player* player);
@@ -228,9 +231,9 @@ class BattlegroundWS : public Battleground
         uint32 m_ReputationCapture;
         uint32 m_HonorWinKills;
         uint32 m_HonorEndKills;
-        int32 _flagSpellForceTimer;
-        bool _bothFlagsKept;
-        uint8 _flagDebuffState;                            // 0 - no debuffs, 1 - focused assault, 2 - brutal assault
+        int32 _flagSpellForceTimer[2];
+        int32 _flagAntiCheatTimer[2];
+        uint8 _flagDebuffState[2];                            // 0 - no debuffs, 1 - focused assault, 2 - brutal assault
         uint8 _minutesElapsed;
 
         void PostUpdateImpl(uint32 diff);
