@@ -2835,7 +2835,7 @@ Log.Async.Enable = 0
 #                    0 - Log only (LOG_FILTER_NETWORKIO)
 #                    2 - Log + kick + ban
 
-PacketSpoof.Policy = 1
+PacketSpoof.Policy = 2
 
 #
 #    PacketSpoof.BanMode
@@ -2845,7 +2845,7 @@ PacketSpoof.Policy = 1
 #                    2 - Ban IP
 #
 
-PacketSpoof.BanMode = 0
+PacketSpoof.BanMode = 2
 
 #
 #    PacketSpoof.BanDuration
