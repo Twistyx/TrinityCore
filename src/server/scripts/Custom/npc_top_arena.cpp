@@ -23,13 +23,13 @@ class npc_arena_teamTop : public CreatureScript
 public:
     npc_arena_teamTop() : CreatureScript("npc_arena_teamTop") { }
      
-    bool OnGossipHello(Player* player, Creature* creature)
+    bool OnGossipHello(Player* player, Creature* me)
     {
-        player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "View top 2v2 Arena Teams", GOSSIP_SENDER_MAIN, 2);
-        player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "View top 3v3 Arena Teams", GOSSIP_SENDER_MAIN, 3);
-        player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "View top 5v5 Arena Teams", GOSSIP_SENDER_MAIN, 5);
+        player->ADD_GOSSIP_ITEM(4,"|cff00ff00|TInterface\\icons\\Achievement_Arena_2v2_7:26|t|r Top 10: 2v2 Arena", GOSSIP_SENDER_MAIN, 2);
+        player->ADD_GOSSIP_ITEM(4,"|cff00ff00|TInterface\\icons\\Achievement_Arena_3v3_7:26|t|r Top 10: 3v3 Arena", GOSSIP_SENDER_MAIN, 3);
+        player->ADD_GOSSIP_ITEM(4,"|cff00ff00|TInterface\\icons\\Achievement_Arena_5v5_7:26|t|r Top 10: 5v5 Arena", GOSSIP_SENDER_MAIN, 5);
         player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Nevermind", GOSSIP_SENDER_MAIN, 1);
-        player->SEND_GOSSIP_MENU(1, creature->GetGUID());
+        player->SEND_GOSSIP_MENU(90085, me->GetGUID());
         return true;
     }
      
@@ -52,7 +52,10 @@ public:
             uint32  rating;
             uint8   rank = 0;
             if (!result)
+            {
+                player->GetSession()->SendNotification("Arena team not found...");
                 return false;
+            }
 
             do
             {
@@ -60,13 +63,13 @@ public:
                 ss.str(std::string());
                 fields = result->Fetch();
                 rating = fields[1].GetUInt32();
-                ss << "#" << rank + 0 << " : " << fields[0].GetString() << " Team Rating: " << rating;
-                std::cout << ss.str() << '\n';
+                ss << "#" << rank + 0 << ' ' << fields[0].GetString() << " (" << rating << ')';
                 player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, ss.str(), GOSSIP_SENDER_MAIN, 1);
             }
             while (result->NextRow());
 
             player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Nevermind", GOSSIP_SENDER_MAIN, 1);
+            player->SEND_GOSSIP_MENU(90085, me->GetGUID());
         }
         else
             player->CLOSE_GOSSIP_MENU();
