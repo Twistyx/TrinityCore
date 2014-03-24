@@ -13,6 +13,8 @@ set(scripts_STAT_SRCS
   Custom/npc_changer.cpp
   Custom/npc_beastmaster.cpp
   Custom/npc_cyclone_customs.cpp
+  Custom/npc_top_arena.cpp
+  Custom/npc_immvp_scripts.cpp
 )
 
 message("  -> Prepared: Custom")

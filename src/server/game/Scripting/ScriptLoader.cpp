@@ -683,7 +683,9 @@ void AddSC_chat_log();
 void AddSC_npc_changer();
 void AddSC_npc_beastmaster();
 void AddSC_cyclone_customs();
+void AddSC_npc_top_arena();
 void AddSC_cs_world_chat();
+void AddSC_custom_immvp_scripts();
 
 #endif
 
@@ -1409,6 +1411,8 @@ void AddCustomScripts()
 	AddSC_npc_changer();
 	AddSC_npc_beastmaster();
 	AddSC_cyclone_customs();
+	AddSC_custom_immvp_scripts();
+	AddSC_npc_top_arena();
 	AddSC_cs_world_chat();
 #endif
 }
