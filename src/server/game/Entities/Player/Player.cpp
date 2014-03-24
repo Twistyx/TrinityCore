@@ -22849,7 +22849,7 @@ void Player::learnDefaultSpells()
     for (PlayerCreateInfoSpells::const_iterator itr = info->spell.begin(); itr != info->spell.end(); ++itr)
     {
         uint32 tspell = *itr;
-        TC_LOG_DEBUG(LOG_FILTER_PLAYER_LOADING, "PLAYER (Class: %u Race: %u): Adding initial spell, id = %u", uint32(getClass()), uint32(getRace()), tspell);
+        TC_LOG_DEBUG(LOG_FILTER_PLAYER_LOADING, "PLAYER (Class: %u Race: %u): Adding initial spell, id = %u", uint32(getClass()), uint32(getORace()), tspell);
         if (!IsInWorld())                                    // will send in INITIAL_SPELLS in list anyway at map add
             addSpell(tspell, true, true, true, false);
         else                                                // but send in normal spell in game learn case
