@@ -21437,6 +21437,7 @@ bool Player::BuyItemFromVendorSlot(uint64 vendorguid, uint32 vendorslot, uint32 
     // cheating attempt
     if (count < 1) count = 1;
 
+    //printf("DEBUG : vendorguid(%d)\n",  uint32(GUID_LOPART(vendorguid)));
     // cheating attempt
     if (slot > MAX_BAG_SIZE && slot != NULL_SLOT)
         return false;
@@ -21465,12 +21466,14 @@ bool Player::BuyItemFromVendorSlot(uint64 vendorguid, uint32 vendorslot, uint32 
         SendBuyError(BUY_ERR_CANT_FIND_ITEM, creature, item, 0);
         return false;
     }
+    //printf("DEBUG : VendorItemData OK\n");
 
     if (vendorslot >= vItems->GetItemCount())
     {
         SendBuyError(BUY_ERR_CANT_FIND_ITEM, creature, item, 0);
         return false;
     }
+    //printf("DEBUG : GetItemCount OK\n");
 
     VendorItem const* crItem = vItems->GetItem(vendorslot);
     // store diff item (cheating)
@@ -21479,6 +21482,7 @@ bool Player::BuyItemFromVendorSlot(uint64 vendorguid, uint32 vendorslot, uint32 
         SendBuyError(BUY_ERR_CANT_FIND_ITEM, creature, item, 0);
         return false;
     }
+    //printf("DEBUG : store diff OK\n");
 
     // check current item amount if it limited
     if (crItem->maxcount != 0)
@@ -21489,12 +21493,14 @@ bool Player::BuyItemFromVendorSlot(uint64 vendorguid, uint32 vendorslot, uint32 
             return false;
         }
     }
+    //printf("DEBUG : maxcount OK\n");
 
     if (pProto->RequiredReputationFaction && (uint32(GetReputationRank(pProto->RequiredReputationFaction)) < pProto->RequiredReputationRank))
     {
         SendBuyError(BUY_ERR_REPUTATION_REQUIRE, creature, item, 0);
         return false;
     }
+    //printf("DEBUG : RequiredReputationFaction OK\n");
 
     if (crItem->ExtendedCost)
     {
@@ -21522,7 +21528,9 @@ bool Player::BuyItemFromVendorSlot(uint64 vendorguid, uint32 vendorslot, uint32 
         // item base price
         for (uint8 i = 0; i < MAX_ITEM_EXTENDED_COST_REQUIREMENTS; ++i)
         {
-            if (iece->reqitem[i] && !HasItemCount(iece->reqitem[i], (iece->reqitemcount[i] * count)))
+            //printf("DEBUG : reqitem(%d), vendorguid(%d)\n", iece->reqitem[i], uint32(GUID_LOPART(vendorguid)));
+
+            if ((iece->reqitem[i] == 44990) || (iece->reqitem[i] && !HasItemCount(iece->reqitem[i], (iece->reqitemcount[i] * count))))
             {
                 SendEquipError(EQUIP_ERR_VENDOR_MISSING_TURNINS, NULL, NULL);
                 return false;

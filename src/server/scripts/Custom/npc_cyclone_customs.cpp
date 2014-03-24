@@ -9,7 +9,7 @@
 #define A_Y             -88.27f
 #define A_Z             161.50f
 #define TOKEN           41596
-#define TOKEN_COUNT     10
+#define TOKEN_COUNT     8
 #define TITLE_REWARDED  47 // title "The Conqueror"
 #define ELEM_COUNT      25 // Amount of enchants showed per page
 #define TXT_PREV_PG     "<- Previous page"
@@ -51,6 +51,7 @@ enum Gossip_Option_Custom
     CUSTOM_OPTION_ITEM_MENU_MAX = 34,
     CUSTOM_OPTION_SUFFIX        = 35,
     CUSTOM_OPTION_PROPERTY      = 36,
+    CUSTOM_OPTION_VENDOR        = 37,
     CUSTOM_OPTION_MAX
 };
 
@@ -173,8 +174,7 @@ static bool SellItem(Player* player, Creature* me, uint32 data, uint32 itemId)
     player->BuyItemFromVendorSlot(me->GetGUID(), vendorslot, itemId, 1, NULL_BAG, NULL_SLOT, randomEnchant);
 
     //return to the vendor list
-    player->PlayerTalkClass->ClearMenus();
-    player->GetSession()->SendListInventory(me->GetGUID());
+    sScriptMgr->OnGossipHello(player, me);
     return true;
 }
 
@@ -401,7 +401,7 @@ public:
                 ss << "0";
             ss << 0 + npcTitle << FORMAT_END << titlesNames[npcTitle + faction];
             ss << " still " << reqTokens - totalTokens << TXT_WSG_MARK;
-            player->ADD_GOSSIP_ITEM(GOSSIP_ICON_DOT, ss.str().c_str(), GOSSIP_SENDER_MAIN, CUSTOM_OPTION_EXIT);
+            player->ADD_GOSSIP_ITEM(GOSSIP_ICON_DOT, ss.str().c_str(), GOSSIP_SENDER_MAIN, CUSTOM_OPTION_VENDOR);
             player->ADD_GOSSIP_ITEM(GOSSIP_ICON_DOT, TXT_KTHXBY, GOSSIP_SENDER_MAIN, CUSTOM_OPTION_EXIT);
             player->PlayerTalkClass->SendGossipMenu(8, me->GetGUID());
         }
@@ -412,7 +412,9 @@ public:
     {
         player->PlayerTalkClass->ClearMenus();
         if (uiAction == GOSSIP_OPTION_VENDOR)
-            player->GetSession()->SendListInventory(me->GetGUID());
+            OnGossipHello(player, me);
+        else if (uiAction == CUSTOM_OPTION_VENDOR)
+            player->GetSession()->SendListInventory(me->GetGUID() - 1000);
         else if (uiAction >= CUSTOM_OPTION_ITEM_MENU && uiAction < CUSTOM_OPTION_ITEM_MENU_MAX)
             return (GetList(player, me, data, uiAction - CUSTOM_OPTION_ITEM_MENU + 1));
         else if (uiAction > CUSTOM_OPTION_MAX) //in that case uiAction == itemID lol

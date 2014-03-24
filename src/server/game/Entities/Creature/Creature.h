@@ -546,7 +546,7 @@ class Creature : public Unit, public GridObject<Creature>, public MapCreature
 
         float GetSpellDamageMod(int32 Rank) const;
 
-        VendorItemData const* GetVendorItems() const;
+        VendorItemData const* GetVendorItems(bool chect = true) const;
         uint32 GetVendorItemCurrentCount(VendorItem const* vItem);
         uint32 UpdateVendorItemCurrentCount(VendorItem const* vItem, uint32 used_count);
 
