@@ -492,7 +492,7 @@ void ArenaTeam::Inspect(WorldSession* session, uint64 guid)
 void ArenaTeamMember::ModifyPersonalRating(Player* player, int32 mod, uint32 type)
 {
     const uint8 slot = ArenaTeam::GetSlotByType(type);
-    uint8 arenaPointsGain = 20;
+    uint8 arenaPointsGain = 15 * (type - 1);
 
     if (int32(PersonalRating) + mod < 0)
         PersonalRating = 0;
@@ -504,7 +504,12 @@ void ArenaTeamMember::ModifyPersonalRating(Player* player, int32 mod, uint32 typ
     }
 
     if (mod > 0) //winners
-        arenaPointsGain += mod / 2 + 15;    
+    {
+        arenaPointsGain += (mod * (type - 1));
+        if (arenaPointsGain > 20 * type)
+            arenaPointsGain = 20 * type;
+    }
+
     if (player)
     {
         player->ModifyArenaPoints(arenaPointsGain);
