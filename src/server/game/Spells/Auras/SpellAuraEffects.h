@@ -53,7 +53,10 @@ class AuraEffect
         int32 GetMiscValue() const { return m_spellInfo->Effects[m_effIndex].MiscValue; }
         AuraType GetAuraType() const { return (AuraType)m_spellInfo->Effects[m_effIndex].ApplyAuraName; }
         int32 GetAmount() const { return m_amount; }
+        uint32 GetAmountCalc() const { return m_amount_calc; }
         void SetAmount(int32 amount) { m_amount = amount; m_canBeRecalculated = false;}
+        void SetAmountCalc(uint32 amount) { m_amount_calc = amount; }
+        uint32 CalculateAmountCalc(Unit* caster, Unit* target, uint32 damage);
 
         int32 GetPeriodicTimer() const { return m_periodicTimer; }
         void SetPeriodicTimer(int32 periodicTimer) { m_periodicTimer = periodicTimer; }
@@ -104,6 +107,7 @@ class AuraEffect
         int32 m_periodicTimer;
         int32 m_amplitude;
         uint32 m_tickNumber;
+        uint32 m_amount_calc;
 
         uint8 const m_effIndex;
         bool m_canBeRecalculated;

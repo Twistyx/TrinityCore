@@ -384,6 +384,7 @@ m_canBeRecalculated(true), m_isPeriodic(false)
 {
     CalculatePeriodic(caster, true, false);
 
+    m_amount_calc = 0;
     m_amount = CalculateAmount(caster);
 
     CalculateSpellMod();
@@ -493,6 +494,25 @@ int32 AuraEffect::CalculateAmount(Unit* caster)
     GetBase()->CallScriptEffectCalcAmountHandlers(this, amount, m_canBeRecalculated);
     amount *= GetBase()->GetStackAmount();
     return amount;
+}
+
+uint32 AuraEffect::CalculateAmountCalc(Unit* caster, Unit* target, uint32 damage)
+{
+    switch (GetAuraType())
+    {
+        case SPELL_AURA_PERIODIC_DAMAGE:
+            damage = caster->SpellDamageBonusDone(target, GetSpellInfo(), damage, DOT, GetBase()->GetStackAmount());
+            break;
+        case SPELL_AURA_PERIODIC_HEAL:
+        case SPELL_AURA_OBS_MOD_HEALTH:
+            damage = caster->SpellHealingBonusDone(target, GetSpellInfo(), damage, DOT, GetBase()->GetStackAmount());
+            break;
+        default:
+            break;
+    }
+
+    SetAmountCalc(damage);
+    return (damage);
 }
 
 void AuraEffect::CalculatePeriodic(Unit* caster, bool create, bool load)
@@ -605,6 +625,7 @@ void AuraEffect::CalculateSpellMod()
 void AuraEffect::ChangeAmount(int32 newAmount, bool mark, bool onStackOrReapply)
 {
     // Reapply if amount change
+    m_amount_calc = 0;
     uint8 handleMask = 0;
     if (newAmount != GetAmount())
         handleMask |= AURA_EFFECT_HANDLE_CHANGE_AMOUNT;
@@ -750,7 +771,22 @@ void AuraEffect::Update(uint32 diff, Unit* caster)
     if (m_isPeriodic && (GetBase()->GetDuration() >=0 || GetBase()->IsPassive() || GetBase()->IsPermanent()))
     {
         if (m_periodicTimer > int32(diff))
+        {
             m_periodicTimer -= diff;
+
+            std::list<AuraApplication*> effectApplications;
+            GetApplicationList(effectApplications);
+            // tick on targets of effects
+
+            if (!m_amount_calc)
+            {
+                for (std::list<AuraApplication*>::const_iterator apptItr = effectApplications.begin(); apptItr != effectApplications.end(); ++apptItr)
+                {
+                    if ((*apptItr)->HasEffect(GetEffIndex()))
+                        CalculateAmountCalc(caster, (*apptItr)->GetTarget(), std::max(GetAmount(), 0));
+                }
+            }
+        }
         else // tick also at m_periodicTimer == 0 to prevent lost last tick in case max m_duration == (max m_periodicTimer)*N
         {
             ++m_tickNumber;
@@ -763,8 +799,14 @@ void AuraEffect::Update(uint32 diff, Unit* caster)
             GetApplicationList(effectApplications);
             // tick on targets of effects
             for (std::list<AuraApplication*>::const_iterator apptItr = effectApplications.begin(); apptItr != effectApplications.end(); ++apptItr)
+            {
                 if ((*apptItr)->HasEffect(GetEffIndex()))
+                {
+                    if (!m_amount_calc)
+                        CalculateAmountCalc(caster, (*apptItr)->GetTarget(), std::max(GetAmount(), 0));
                     PeriodicTick(*apptItr, caster);
+                }
+            }
         }
     }
 }
@@ -5813,14 +5855,14 @@ void AuraEffect::HandlePeriodicDamageAurasTick(Unit* target, Unit* caster) const
     CleanDamage cleanDamage = CleanDamage(0, 0, BASE_ATTACK, MELEE_HIT_NORMAL);
 
     // ignore non positive values (can be result apply spellmods to aura damage
-    uint32 damage = std::max(GetAmount(), 0);
+    uint32 damage;
 
     // Script Hook For HandlePeriodicDamageAurasTick -- Allow scripts to change the Damage pre class mitigation calculations
     sScriptMgr->ModifyPeriodicDamageAurasTick(target, caster, damage);
 
     if (GetAuraType() == SPELL_AURA_PERIODIC_DAMAGE)
     {
-        damage = caster->SpellDamageBonusDone(target, GetSpellInfo(), damage, DOT, GetBase()->GetStackAmount());
+        damage = GetAmountCalc();
         damage = target->SpellDamageBonusTaken(caster, GetSpellInfo(), damage, DOT, GetBase()->GetStackAmount());
 
         // Calculate armor mitigation
@@ -5874,7 +5916,10 @@ void AuraEffect::HandlePeriodicDamageAurasTick(Unit* target, Unit* caster) const
         }
     }
     else
+    {
+        damage = std::max(GetAmount(), 0);
         damage = uint32(target->CountPctFromMaxHealth(damage));
+    }
 
     bool crit = IsPeriodicTickCrit(target, caster);
     if (crit)
@@ -5882,6 +5927,8 @@ void AuraEffect::HandlePeriodicDamageAurasTick(Unit* target, Unit* caster) const
 
     int32 dmg = damage;
     caster->ApplyResilience(target, NULL, &dmg, crit, CR_CRIT_TAKEN_SPELL);
+    caster->ApplyResilience(target, NULL, &dmg, crit, CR_CRIT_TAKEN_SPELL);
+    dmg = caster->ApplyCustomArenaBalance(target, caster, dmg);
     damage = dmg;
 
     caster->CalcAbsorbResist(target, GetSpellInfo()->GetSchoolMask(), DOT, damage, &absorb, &resist, GetSpellInfo());
@@ -5932,7 +5979,7 @@ void AuraEffect::HandlePeriodicHealthLeechAuraTick(Unit* target, Unit* caster) c
 
     uint32 damage = std::max(GetAmount(), 0);
 
-    damage = caster->SpellDamageBonusDone(target, GetSpellInfo(), damage, DOT, GetBase()->GetStackAmount());
+    damage = GetAmountCalc();
     damage = target->SpellDamageBonusTaken(caster, GetSpellInfo(), damage, DOT, GetBase()->GetStackAmount());
 
     bool crit = IsPeriodicTickCrit(target, caster);
@@ -5949,6 +5996,8 @@ void AuraEffect::HandlePeriodicHealthLeechAuraTick(Unit* target, Unit* caster) c
 
     int32 dmg = damage;
     caster->ApplyResilience(target, NULL, &dmg, crit, CR_CRIT_TAKEN_SPELL);
+    dmg = caster->ApplyCustomArenaBalance(target, caster, dmg);
+    const float buff_mod = float(damage) / float(dmg);
     damage = dmg;
 
     caster->CalcAbsorbResist(target, GetSpellInfo()->GetSchoolMask(), DOT, damage, &absorb, &resist, m_spellInfo);
@@ -5971,6 +6020,8 @@ void AuraEffect::HandlePeriodicHealthLeechAuraTick(Unit* target, Unit* caster) c
     if (caster->IsAlive())
         caster->ProcDamageAndSpell(target, procAttacker, procVictim, procEx, damage, BASE_ATTACK, GetSpellInfo());
     int32 new_damage = caster->DealDamage(target, damage, &cleanDamage, DOT, GetSpellInfo()->GetSchoolMask(), GetSpellInfo(), false);
+    
+    new_damage = new_damage * buff_mod;
     if (caster->IsAlive())
     {
         float gainMultiplier = GetSpellInfo()->Effects[GetEffIndex()].CalcValueMultiplier(caster);
@@ -6080,7 +6131,7 @@ void AuraEffect::HandlePeriodicHealAurasTick(Unit* target, Unit* caster) const
             damage += addition;
         }
 
-        damage = caster->SpellHealingBonusDone(target, GetSpellInfo(), damage, DOT, GetBase()->GetStackAmount());
+        damage = GetAmountCalc();
         damage = target->SpellHealingBonusTaken(caster, GetSpellInfo(), damage, DOT, GetBase()->GetStackAmount());
     }
 
