@@ -3,27 +3,28 @@
 #include "Language.h"
 #include "Transmogrification.h"
 
-const char * Transmogrification::GetSlotName(uint8 slot, WorldSession* session) const
+const char * Transmogrification::GetSlotName(uint8 slot, WorldSession* /*session*/) const
 {
     switch (slot)
     {
-    case EQUIPMENT_SLOT_HEAD      : return  "Head";// session->GetTrinityString(LANG_SLOT_NAME_HEAD);
-    case EQUIPMENT_SLOT_SHOULDERS : return  "Shoulders";// session->GetTrinityString(LANG_SLOT_NAME_SHOULDERS);
-    case EQUIPMENT_SLOT_BODY      : return  "Shirt";// session->GetTrinityString(LANG_SLOT_NAME_BODY);
-    case EQUIPMENT_SLOT_CHEST     : return  "Chest";// session->GetTrinityString(LANG_SLOT_NAME_CHEST);
-    case EQUIPMENT_SLOT_WAIST     : return  "Waist";// session->GetTrinityString(LANG_SLOT_NAME_WAIST);
-    case EQUIPMENT_SLOT_LEGS      : return  "Legs";// session->GetTrinityString(LANG_SLOT_NAME_LEGS);
-    case EQUIPMENT_SLOT_FEET      : return  "Feet";// session->GetTrinityString(LANG_SLOT_NAME_FEET);
-    case EQUIPMENT_SLOT_WRISTS    : return  "Wrists";// session->GetTrinityString(LANG_SLOT_NAME_WRISTS);
-    case EQUIPMENT_SLOT_HANDS     : return  "Hands";// session->GetTrinityString(LANG_SLOT_NAME_HANDS);
-    case EQUIPMENT_SLOT_BACK      : return  "Back";// session->GetTrinityString(LANG_SLOT_NAME_BACK);
-    case EQUIPMENT_SLOT_MAINHAND  : return  "Main hand";// session->GetTrinityString(LANG_SLOT_NAME_MAINHAND);
-    case EQUIPMENT_SLOT_OFFHAND   : return  "Off hand";// session->GetTrinityString(LANG_SLOT_NAME_OFFHAND);
-    case EQUIPMENT_SLOT_RANGED    : return  "Ranged";// session->GetTrinityString(LANG_SLOT_NAME_RANGED);
-    case EQUIPMENT_SLOT_TABARD    : return  "Tabard";// session->GetTrinityString(LANG_SLOT_NAME_TABARD);
+    case EQUIPMENT_SLOT_HEAD      : return  "Head";      // session->GetTrinityString(LANG_SLOT_NAME_HEAD);
+    case EQUIPMENT_SLOT_SHOULDERS : return  "Shoulders"; // session->GetTrinityString(LANG_SLOT_NAME_SHOULDERS);
+    case EQUIPMENT_SLOT_BODY      : return  "Shirt";     // session->GetTrinityString(LANG_SLOT_NAME_BODY);
+    case EQUIPMENT_SLOT_CHEST     : return  "Chest";     // session->GetTrinityString(LANG_SLOT_NAME_CHEST);
+    case EQUIPMENT_SLOT_WAIST     : return  "Waist";     // session->GetTrinityString(LANG_SLOT_NAME_WAIST);
+    case EQUIPMENT_SLOT_LEGS      : return  "Legs";      // session->GetTrinityString(LANG_SLOT_NAME_LEGS);
+    case EQUIPMENT_SLOT_FEET      : return  "Feet";      // session->GetTrinityString(LANG_SLOT_NAME_FEET);
+    case EQUIPMENT_SLOT_WRISTS    : return  "Wrists";    // session->GetTrinityString(LANG_SLOT_NAME_WRISTS);
+    case EQUIPMENT_SLOT_HANDS     : return  "Hands";     // session->GetTrinityString(LANG_SLOT_NAME_HANDS);
+    case EQUIPMENT_SLOT_BACK      : return  "Back";      // session->GetTrinityString(LANG_SLOT_NAME_BACK);
+    case EQUIPMENT_SLOT_MAINHAND  : return  "Main hand"; // session->GetTrinityString(LANG_SLOT_NAME_MAINHAND);
+    case EQUIPMENT_SLOT_OFFHAND   : return  "Off hand";  // session->GetTrinityString(LANG_SLOT_NAME_OFFHAND);
+    case EQUIPMENT_SLOT_RANGED    : return  "Ranged";    // session->GetTrinityString(LANG_SLOT_NAME_RANGED);
+    case EQUIPMENT_SLOT_TABARD    : return  "Tabard";    // session->GetTrinityString(LANG_SLOT_NAME_TABARD);
     default: return NULL;
     }
 }
+
 std::string Transmogrification::GetItemIcon(uint32 entry, uint32 width, uint32 height, int x, int y)
 {
     std::ostringstream ss;
@@ -125,13 +126,13 @@ void Transmogrification::LoadPlayerSets(uint64 pGUID)
                     break;
                 if(slot >= EQUIPMENT_SLOT_END)
                 {
-                    TC_LOG_WARN("server.loading", "Item entry (FakeEntry: %u, playerGUID: %u, slot: %u, presetId: %u) has invalid slot, ignoring.", entry, GUID_LOPART(pGUID), slot, uint32(PresetID));
+//                    TC_LOG_WARN("server.loading", "Item entry (FakeEntry: %u, playerGUID: %u, slot: %u, presetId: %u) has invalid slot, ignoring.", entry, GUID_LOPART(pGUID), slot, uint32(PresetID));
                     continue;
                 }
                 if (sObjectMgr->GetItemTemplate(entry))
                     presetById[pGUID][PresetID][slot] = entry; // Transmogrification::Preset(presetName, fakeEntry);
-                else
-                    TC_LOG_WARN("server.loading", "Item entry (FakeEntry: %u, playerGUID: %u, slot: %u, presetId: %u) does not exist, ignoring.", entry, GUID_LOPART(pGUID), uint32(slot), uint32(PresetID));
+//                else
+//                    TC_LOG_WARN("server.loading", "Item entry (FakeEntry: %u, playerGUID: %u, slot: %u, presetId: %u) does not exist, ignoring.", entry, GUID_LOPART(pGUID), uint32(slot), uint32(PresetID));
             }
 
             if (!presetById[pGUID][PresetID].empty())
@@ -263,7 +264,7 @@ TransmogTrinityStrings Transmogrification::Transmogrify(Player* player, uint64 i
     // slot of the transmogrified item
     if (slot >= EQUIPMENT_SLOT_END)
     {
-        TC_LOG_DEBUG("network", "WORLD: HandleTransmogrifyItems - Player (GUID: %u, name: %s) tried to transmogrify an item (lowguid: %u) with a wrong slot (%u) when transmogrifying items.", player->GetGUIDLow(), player->GetName().c_str(), GUID_LOPART(itemGUID), slot);
+//        TC_LOG_DEBUG("network", "WORLD: HandleTransmogrifyItems - Player (GUID: %u, name: %s) tried to transmogrify an item (lowguid: %u) with a wrong slot (%u) when transmogrifying items.", player->GetGUIDLow(), player->GetName().c_str(), GUID_LOPART(itemGUID), slot);
         return LANG_ERR_TRANSMOG_INVALID_SLOT;
     }
 
@@ -287,7 +288,7 @@ TransmogTrinityStrings Transmogrification::Transmogrify(Player* player, uint64 i
         itemTransmogrifier = player->GetItemByGuid(itemGUID);
         if (!itemTransmogrifier)
         {
-            TC_LOG_DEBUG("network", "WORLD: HandleTransmogrifyItems - Player (GUID: %u, name: %s) tried to transmogrify with an invalid item (lowguid: %u).", player->GetGUIDLow(), player->GetName().c_str(), GUID_LOPART(itemGUID));
+//            TC_LOG_DEBUG("network", "WORLD: HandleTransmogrifyItems - Player (GUID: %u, name: %s) tried to transmogrify with an invalid item (lowguid: %u).", player->GetGUIDLow(), player->GetName().c_str(), GUID_LOPART(itemGUID));
             return LANG_ERR_TRANSMOG_MISSING_SRC_ITEM;
         }
     }
@@ -296,7 +297,7 @@ TransmogTrinityStrings Transmogrification::Transmogrify(Player* player, uint64 i
     Item* itemTransmogrified = player->GetItemByPos(INVENTORY_SLOT_BAG_0, slot);
     if (!itemTransmogrified)
     {
-        TC_LOG_DEBUG("network", "WORLD: HandleTransmogrifyItems - Player (GUID: %u, name: %s) tried to transmogrify an invalid item in a valid slot (slot: %u).", player->GetGUIDLow(), player->GetName().c_str(), slot);
+//        TC_LOG_DEBUG("network", "WORLD: HandleTransmogrifyItems - Player (GUID: %u, name: %s) tried to transmogrify an invalid item in a valid slot (slot: %u).", player->GetGUIDLow(), player->GetName().c_str(), slot);
         return LANG_ERR_TRANSMOG_MISSING_DEST_ITEM;
     }
 
@@ -327,7 +328,7 @@ TransmogTrinityStrings Transmogrification::Transmogrify(Player* player, uint64 i
     {
         if (!CanTransmogrifyItemWithItem(player, itemTransmogrified->GetTemplate(), itemTransmogrifier->GetTemplate()))
         {
-            TC_LOG_DEBUG("network", "WORLD: HandleTransmogrifyItems - Player (GUID: %u, name: %s) failed CanTransmogrifyItemWithItem (%u with %u).", player->GetGUIDLow(), player->GetName().c_str(), itemTransmogrified->GetEntry(), itemTransmogrifier->GetEntry());
+        //    TC_LOG_DEBUG("network", "WORLD: HandleTransmogrifyItems - Player (GUID: %u, name: %s) failed CanTransmogrifyItemWithItem (%u with %u).", player->GetGUIDLow(), player->GetName().c_str(), itemTransmogrified->GetEntry(), itemTransmogrifier->GetEntry());
             return LANG_ERR_TRANSMOG_INVALID_ITEMS;
         }
 
@@ -664,7 +665,7 @@ void Transmogrification::LoadConfig(bool reload)
 
     if (!sObjectMgr->GetItemTemplate(TokenEntry))
     {
-        TC_LOG_INFO("server.loading", "Transmogrification.TokenEntry (%u) does not exist. Using default (%u).", TokenEntry, 49426);
+    //    TC_LOG_INFO("server.loading", "Transmogrification.TokenEntry (%u) does not exist. Using default (%u).", TokenEntry, 49426);
         TokenEntry = 49426;
     }
 }

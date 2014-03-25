@@ -16,6 +16,9 @@ set(scripts_STAT_SRCS
   Custom/npc_top_arena.cpp
   Custom/cs_world_chat.cpp
   Custom/npc_immvp_scripts.cpp
+  Custom/Transmogrification.h
+  Custom/Transmogrification.cpp
+  Custom/Transmogrifier.cpp
 )
 
 message("  -> Prepared: Custom")
