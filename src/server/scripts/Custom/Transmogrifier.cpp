@@ -38,7 +38,7 @@ public:
         WorldSession* session = player->GetSession();
         if (sT->EnableTransmogInfo)
             player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "|TInterface/ICONS/INV_Misc_Book_11:30:30:-18:0|tHow transmogrification works", EQUIPMENT_SLOT_END+9, 0);
-        for (uint8 slot = EQUIPMENT_SLOT_START; slot < EQUIPMENT_SLOT_END; ++slot)
+        for (uint8 slot = EQUIPMENT_SLOT_NECK; slot < EQUIPMENT_SLOT_TABARD; ++slot)
         {
             if (const char* slotName = sT->GetSlotName(slot, session))
             {
@@ -74,7 +74,7 @@ public:
             {
                 bool removed = false;
                 SQLTransaction trans = CharacterDatabase.BeginTransaction();
-                for (uint8 slot = EQUIPMENT_SLOT_START; slot < EQUIPMENT_SLOT_END; ++slot)
+                for (uint8 slot = EQUIPMENT_SLOT_NECK; slot < EQUIPMENT_SLOT_TABARD; ++slot)
                 {
                     if (Item* newItem = player->GetItemByPos(INVENTORY_SLOT_BAG_0, slot))
                     {
@@ -180,7 +180,7 @@ public:
                 }
                 uint32 cost = 0;
                 bool canSave = false;
-                for (uint8 slot = EQUIPMENT_SLOT_START; slot < EQUIPMENT_SLOT_END; ++slot)
+                for (uint8 slot = EQUIPMENT_SLOT_NECK; slot < EQUIPMENT_SLOT_TABARD; ++slot)
                 {
                     if (!sT->GetSlotName(slot, session))
                         continue;
@@ -258,7 +258,7 @@ public:
 
                 int32 cost = 0;
                 std::map<uint8, uint32> items;
-                for (uint8 slot = EQUIPMENT_SLOT_START; slot < EQUIPMENT_SLOT_END; ++slot)
+                for (uint8 slot = EQUIPMENT_SLOT_NECK; slot < EQUIPMENT_SLOT_TABARD; ++slot)
                 {
                     if (!sT->GetSlotName(slot, player->GetSession()))
                         continue;
@@ -384,14 +384,10 @@ public:
                     sT->dataMap[itemGUID] = playerGUID;
                     sT->entryMap[playerGUID][itemGUID] = fakeEntry;
                 }
-                else
-                {
-//                    TC_LOG_WARN("server.loading", "Item entry (Entry: %u, itemGUID: %u, playerGUID: %u) does not exist, ignoring.", fakeEntry, GUID_LOPART(itemGUID), player->GetGUIDLow());
-                    // CharacterDatabase.PExecute("DELETE FROM custom_transmogrification WHERE FakeEntry = %u", fakeEntry);
-                }
+
             } while (result->NextRow());
 
-            for (uint8 slot = EQUIPMENT_SLOT_START; slot < EQUIPMENT_SLOT_END; ++slot)
+            for (uint8 slot = EQUIPMENT_SLOT_NECK; slot < EQUIPMENT_SLOT_TABARD; ++slot)
             {
                 if (Item* item = player->GetItemByPos(INVENTORY_SLOT_BAG_0, slot))
                     player->SetVisibleItemSlot(slot, item);
