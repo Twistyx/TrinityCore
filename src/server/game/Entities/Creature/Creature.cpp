@@ -2293,11 +2293,9 @@ uint32 Creature::GetScriptId() const
     return sObjectMgr->GetCreatureTemplate(GetEntry())->ScriptID;
 }
 
-VendorItemData const* Creature::GetVendorItems(bool check/* =true*/) const
+VendorItemData const* Creature::GetVendorItems() const
 {
-    if (check)
-        return sObjectMgr->GetNpcVendorItemList(GetEntry());
-    return sObjectMgr->GetNpcVendorItemList(GetEntry() + 5000);
+    return sObjectMgr->GetNpcVendorItemList(GetEntry());
 }
 
 uint32 Creature::GetVendorItemCurrentCount(VendorItem const* vItem)

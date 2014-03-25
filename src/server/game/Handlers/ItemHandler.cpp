@@ -744,12 +744,6 @@ void WorldSession::SendListInventory(uint64 vendorGuid)
 {
     TC_LOG_DEBUG(LOG_FILTER_NETWORKIO, "WORLD: Sent SMSG_LIST_INVENTORY");
 
-    bool check = true;
-    if (uint32(GUID_LOPART(vendorGuid)) < 900)
-    {
-        vendorGuid += 1000;
-        check = false;
-    }
     Creature* vendor = GetPlayer()->GetNPCIfCanInteractWith(vendorGuid, UNIT_NPC_FLAG_VENDOR);
     if (!vendor)
     {
@@ -766,7 +760,7 @@ void WorldSession::SendListInventory(uint64 vendorGuid)
     if (vendor->HasUnitState(UNIT_STATE_MOVING))
         vendor->StopMoving();
 
-    VendorItemData const* items = vendor->GetVendorItems(check);
+    VendorItemData const* items = vendor->GetVendorItems();
     if (!items)
     {
         WorldPacket data(SMSG_LIST_INVENTORY, 8 + 1 + 1);
