@@ -118,5 +118,6 @@ public:
     uint32 GetSpecialPrice(ItemTemplate const* proto) const;
 };
 #define sTransmogrification ACE_Singleton<Transmogrification, ACE_Null_Mutex>::instance()
+#define LFH_LINK "|TInterface/ICONS/INV_Helmet_31:30:30:-18:0|t|cff1eff00|Hitem:19972:0:0:0:0:0:0:0:19|h[Lucky Fishing Hat]|h|r"
 
 #endif
