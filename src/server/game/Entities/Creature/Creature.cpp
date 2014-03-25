@@ -1028,18 +1028,12 @@ void Creature::SaveToDB(uint32 mapid, uint8 spawnMask, uint32 phaseMask)
 
 void Creature::SelectLevel(const CreatureTemplate* cinfo)
 {
-    bool bonus = false;
     uint32 rank = IsPet()? 0 : cinfo->rank;
 
     // level
     uint8 minlevel = std::min(cinfo->maxlevel, cinfo->minlevel);
     uint8 maxlevel = std::max(cinfo->maxlevel, cinfo->minlevel);
     uint8 level = minlevel == maxlevel ? minlevel : urand(minlevel, maxlevel);
-    if (GetMapId() == 309)
-    {
-        bonus = true;
-        level += 41;
-    }
     SetLevel(level);
 
     CreatureBaseStats const* stats = sObjectMgr->GetCreatureBaseStats(level, cinfo->unit_class);
@@ -1078,8 +1072,6 @@ void Creature::SelectLevel(const CreatureTemplate* cinfo)
 
     SetModifierValue(UNIT_MOD_ATTACK_POWER, BASE_VALUE, cinfo->attackpower * damagemod);
 
-    if (bonus)
-        SetLevel(level - 41);
 }
 
 float Creature::_GetHealthMod(int32 Rank)
