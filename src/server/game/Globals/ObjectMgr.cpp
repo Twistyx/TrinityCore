@@ -3172,7 +3172,7 @@ void ObjectMgr::LoadPlayerInfo()
     {
         uint32 oldMSTime = getMSTime();
         //                                                0     1      2       3
-        QueryResult result = WorldDatabase.Query("SELECT race, class, itemid, amount FROM playercreateinfo_item");
+        QueryResult result = WorldDatabase.Query("SELECT racemask, classmask, itemid, amount FROM playercreateinfo_item");
 
         if (!result)
         {
@@ -3185,50 +3185,53 @@ void ObjectMgr::LoadPlayerInfo()
             do
             {
                 Field* fields = result->Fetch();
-
-                uint32 current_race = fields[0].GetUInt8();
-                if (current_race >= MAX_RACES)
-                {
-                    TC_LOG_ERROR(LOG_FILTER_SQL, "Wrong race %u in `playercreateinfo_item` table, ignoring.", current_race);
-                    continue;
-                }
-
-                uint32 current_class = fields[1].GetUInt8();
-                if (current_class >= MAX_CLASSES)
-                {
-                    TC_LOG_ERROR(LOG_FILTER_SQL, "Wrong class %u in `playercreateinfo_item` table, ignoring.", current_class);
-                    continue;
-                }
-
+                uint32 raceMask = fields[0].GetUInt32();
+                uint32 classMask = fields[1].GetUInt32();
                 uint32 item_id = fields[2].GetUInt32();
+                int32 amount   = fields[3].GetInt8();
 
                 if (!GetItemTemplate(item_id))
                 {
-                    TC_LOG_ERROR(LOG_FILTER_SQL, "Item id %u (race %u class %u) in `playercreateinfo_item` table but not listed in `item_template`, ignoring.", item_id, current_race, current_class);
+                    TC_LOG_ERROR(LOG_FILTER_SQL, "Item id %u (race %u class %u) in `playercreateinfo_item` table but not listed in `item_template`, ignoring.", item_id, raceMask, classMask);
                     continue;
                 }
-
-                int32 amount   = fields[3].GetInt8();
 
                 if (!amount)
                 {
-                    TC_LOG_ERROR(LOG_FILTER_SQL, "Item id %u (class %u race %u) have amount == 0 in `playercreateinfo_item` table, ignoring.", item_id, current_race, current_class);
+                    TC_LOG_ERROR(LOG_FILTER_SQL, "Item id %u (class %u race %u) have amount == 0 in `playercreateinfo_item` table, ignoring.", item_id, raceMask, classMask);
                     continue;
                 }
 
-                if (!current_race || !current_class)
+                if (raceMask != 0 && !(raceMask & RACEMASK_ALL_PLAYABLE))
                 {
-                    uint32 min_race = current_race ? current_race : 1;
-                    uint32 max_race = current_race ? current_race + 1 : MAX_RACES;
-                    uint32 min_class = current_class ? current_class : 1;
-                    uint32 max_class = current_class ? current_class + 1 : MAX_CLASSES;
-                    for (uint32 r = min_race; r < max_race; ++r)
-                        for (uint32 c = min_class; c < max_class; ++c)
-                            PlayerCreateInfoAddItemHelper(r, c, item_id, amount);
+                    TC_LOG_ERROR(LOG_FILTER_SQL, "Wrong race mask %u in `playercreateinfo_spell` table, ignoring.", raceMask);
+                    continue;
                 }
-                else
-                    PlayerCreateInfoAddItemHelper(current_race, current_class, item_id, amount);
 
+                if (classMask != 0 && !(classMask & CLASSMASK_ALL_PLAYABLE))
+                {
+                    TC_LOG_ERROR(LOG_FILTER_SQL, "Wrong class mask %u in `playercreateinfo_spell` table, ignoring.", classMask);
+                    continue;
+                }
+
+                for (uint32 raceIndex = RACE_HUMAN; raceIndex < MAX_RACES; ++raceIndex)
+                {
+                    if (raceMask == 0 || ((1 << (raceIndex - 1)) & raceMask))
+                    {
+                        for (uint32 classIndex = CLASS_WARRIOR; classIndex < MAX_CLASSES; ++classIndex)
+                        {
+                            if (classMask == 0 || ((1 << (classIndex - 1)) & classMask))
+                            {
+                                PlayerCreateInfoAddItemHelper(raceIndex, classIndex, item_id, amount);
+
+                                // We need something better here, the check is not accounting for spells used by multiple races/classes but not all of them.
+                                // Either split the masks per class, or per race, which kind of kills the point yet.
+                                // else if (raceMask != 0 && classMask != 0)
+                                //     TC_LOG_ERROR(LOG_FILTER_SQL, "Racemask/classmask (%u/%u) combination was found containing an invalid race/class combination (%u/%u) in `playercreateinfo_spell` (Spell %u), ignoring.", raceMask, classMask, raceIndex, classIndex, spellId);
+                            }
+                        }
+                    }
+                }
                 ++count;
             }
             while (result->NextRow());
