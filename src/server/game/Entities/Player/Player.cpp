@@ -25047,12 +25047,6 @@ void Player::LearnTalent(uint32 talentId, uint32 talentRank)
         return;
     }
 
-    //if (spellid == 16287)
-    //{
-    //    ChatHandler(GetSession()).PSendSysMessage("We limited this talent to rank 1 for balance purposes.");
-    //    return;
-    //}
-    // already known
     if (HasSpell(spellid))
         return;
 
