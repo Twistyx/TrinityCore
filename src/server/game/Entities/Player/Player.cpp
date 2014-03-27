@@ -14114,10 +14114,7 @@ void Player::ApplyEnchantment(Item* item, EnchantmentSlot slot, bool apply, bool
                                     {
                                         if (item_rand->enchant_id[k] == enchant_id)
                                         {
-                                            if (enchant_spell_id == ITEM_MOD_STAMINA)
-                                                basepoints = int32((item_rand->prefix[k] * item->GetItemSuffixFactor()) / 15000);
-                                            else
-                                                basepoints = int32((item_rand->prefix[k] * item->GetItemSuffixFactor()) / 10000);
+                                            basepoints = int32((item_rand->prefix[k] * item->GetItemSuffixFactor()) / 10000);
                                             break;
                                         }
                                     }
@@ -14164,7 +14161,11 @@ void Player::ApplyEnchantment(Item* item, EnchantmentSlot slot, bool apply, bool
                                 if (item_rand_suffix->enchant_id[k] == enchant_id)
                                 {
                                     if (enchant_spell_id == ITEM_MOD_STAMINA)
-                                        enchant_amount = uint32((item_rand_suffix->prefix[k] * item->GetItemSuffixFactor()) / 15000);
+                                    {
+                                        enchant_amount = uint32((((item_rand_suffix->prefix[k] * 2) / 3) * item->GetItemSuffixFactor())  / 10000);
+                                        if (!enchant_amount)
+                                            enchant_amount = 1;
+                                    }
                                     else
                                         enchant_amount = uint32((item_rand_suffix->prefix[k] * item->GetItemSuffixFactor()) / 10000);
                                     break;
