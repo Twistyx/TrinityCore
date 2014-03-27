@@ -78,7 +78,7 @@ class cs_world_chat : public CommandScript
         {
             // Player
             case SEC_PLAYER:
-                if (player->GetTeam() == ALLIANCE)
+                if (player->GetOTeam() == ALLIANCE)
                 {
                     msg += "|cff0000ff[Alliance] ";
                     msg += GetNameLink(player);
