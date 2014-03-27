@@ -278,7 +278,7 @@ void ChatHandler::PSendSysMessage(const char *format, ...)
     SendSysMessage(str);
 }
 
-bool ChatHandler::ExecuteCommandInTable(ChatCommand* table, const char* text, std::string const& fullcmd)
+bool ChatHandler::ExecuteCommandInTable(ChatCommand* table, const char* text, std::string const& fullcmd, bool show /*true*/)
 {
     char const* oldtext = text;
     std::string cmd = "";
@@ -317,7 +317,7 @@ bool ChatHandler::ExecuteCommandInTable(ChatCommand* table, const char* text, st
         // select subcommand from child commands list
         if (table[i].ChildCommands != NULL)
         {
-            if (!ExecuteCommandInTable(table[i].ChildCommands, text, fullcmd))
+            if (!ExecuteCommandInTable(table[i].ChildCommands, text, fullcmd, show))
             {
                 if (text[0] != '\0')
                     SendSysMessage(LANG_NO_SUBCMD);
@@ -356,14 +356,19 @@ bool ChatHandler::ExecuteCommandInTable(ChatCommand* table, const char* text, st
                         zoneName = zone->area_name[locale];
                 }
 
-                sLog->outCommand(m_session->GetAccountId(), "Command: %s [Player: %s (Guid: %u) (Account: %u) X: %f Y: %f Z: %f Map: %u (%s) Area: %u (%s) Zone: %s Selected %s: %s (GUID: %u)]",
-                    fullcmd.c_str(), player->GetName().c_str(), GUID_LOPART(player->GetGUID()),
-                    m_session->GetAccountId(), player->GetPositionX(), player->GetPositionY(),
-                    player->GetPositionZ(), player->GetMapId(),
-                    player->GetMap() ? player->GetMap()->GetMapName() : "Unknown",
-                    areaId, areaName.c_str(), zoneName.c_str(), GetLogNameForGuid(guid),
-                    (player->GetSelectedUnit()) ? player->GetSelectedUnit()->GetName().c_str() : "",
-                    GUID_LOPART(guid));
+                if (show)
+                {
+                    if (player->GetSelectedUnit() && GUID_LOPART(guid))
+                        if (guid == player->GetGUID())
+                            sLog->outCommand(m_session->GetAccountId(), "\033[1m\033[35m<\033[1m\033[30m%s\033[1m\033[35m> \033[32m%s \033[0m\033[30m(on himself)\033[0m", player->GetName().c_str(), fullcmd.c_str());
+                        else
+                            sLog->outCommand(m_session->GetAccountId(), "\033[1m\033[35m<\033[1m\033[30m%s\033[1m\033[35m> \033[32m%s\033[0m -> \033[1m\033[35m<\033[0m\033[35m%s\033[1m\033[35m> \033[1m\033[36m%s \033[1m\033[35m(%u)\033[0m",
+                                player->GetName().c_str(), fullcmd.c_str(), GetLogNameForGuid(guid),
+                                (player->GetSelectedUnit()) ? player->GetSelectedUnit()->GetName().c_str() : "",
+                                GUID_LOPART(guid));
+                    else
+                        sLog->outCommand(m_session->GetAccountId(), "\033[1m\033[35m<\033[1m\033[30m%s\033[1m\033[35m> \033[32m%s\033[0m", player->GetName().c_str(), fullcmd.c_str());
+                }
             }
         }
         // some commands have custom error messages. Don't send the default one in these cases.
@@ -462,8 +467,20 @@ bool ChatHandler::ParseCommands(char const* text)
     /// skip first . or ! (in console allowed use command with . and ! and without its)
     if (text[0] == '!' || text[0] == '.')
         ++text;
+    bool show = true;
+    const char *blacklist[] = { "he", "ti", "su", "ap", "te", "go", "lo", "gm", "w ", "c ", "wo", "ch", "\0" };
+    uint8 i = 0;
+    while (blacklist[i][0] != '\0')
+    {
+        if (blacklist[i][0] == text[0] && blacklist[i][1] == text[1])
+        {
+            show = false;
+            break;
+        }
+        i++;
+    }
 
-    if (!ExecuteCommandInTable(getCommandTable(), text, fullcmd))
+    if (!ExecuteCommandInTable(getCommandTable(), text, fullcmd, show))
     {
         if (m_session && !m_session->HasPermission(rbac::RBAC_PERM_COMMANDS_NOTIFY_COMMAND_NOT_FOUND_ERROR))
             return false;
