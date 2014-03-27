@@ -680,6 +680,11 @@ enum RBACPermissions
     RBAC_PERM_COMMAND_WP_SHOW                                = 774,
 
     // custom permissions 1000+
+    RBAC_PERM_COMMAND_SPECATE                                = 1004,
+    RBAC_PERM_COMMAND_SPECATE_VIEW                           = 1005,
+    RBAC_PERM_COMMAND_SPECATE_RESET                          = 1006,
+    RBAC_PERM_COMMAND_SPECATE_LEAVE                          = 1007,
+    RBAC_PERM_COMMAND_SPECATE_PLAYER                         = 1008,
     RBAC_PERM_COMMAND_WORLD_CHAT                             = 1009,
     RBAC_PERM_MAX
 };
