@@ -442,6 +442,14 @@ Battleground* BattlegroundMgr::GetBattlegroundThroughClientInstance(uint32 insta
     return NULL;
 }
 
+BattlegroundContainer BattlegroundMgr::GetBattlegroundsByType(BattlegroundTypeId bgTypeId)
+{
+    BattlegroundDataContainer::const_iterator it = bgDataStore.find(bgTypeId);
+    if (it == bgDataStore.end())
+        return m_Battlegrounds[bgTypeId];
+    return (it->second.m_Battlegrounds);
+}
+
 Battleground* BattlegroundMgr::GetBattleground(uint32 instanceId, BattlegroundTypeId bgTypeId)
 {
     if (!instanceId)
