@@ -32,6 +32,8 @@ typedef UNORDERED_MAP<uint32, BattlegroundTypeId> BattleMastersMap;
 
 #define BATTLEGROUND_ARENA_POINT_DISTRIBUTION_DAY 86400     // seconds in a day
 #define WS_ARENA_DISTRIBUTION_TIME 20001                    // Custom worldstate
+#define TOP_ARNEA_QUERY_REFRESH_DELAY 60                    // 1min
+#define MAX_TOP 14                                          // Max result 
 
 struct CreateBattlegroundData
 {
@@ -129,6 +131,7 @@ class BattlegroundMgr
         uint32 GetRatingDiscardTimer()  const;
         void InitAutomaticArenaPointDistribution();
         void LoadBattleMastersEntry();
+        uint32 GetTopArenaTeamByRank(const uint8 type, const uint8 rank);
         BattlegroundTypeId GetBattleMasterBG(uint32 entry) const
         {
             BattleMastersMap::const_iterator itr = mBattleMastersMap.find(entry);
@@ -157,6 +160,11 @@ class BattlegroundMgr
         uint32 m_AutoDistributionTimeChecker;
         bool   m_ArenaTesting;
         bool   m_Testing;
+
+        // Arena Top Query and refresh time
+        uint32 m_top[MAX_SLOT][MAX_TOP];
+        time_t m_nextUpdate[MAX_SLOT];
+
         BattleMastersMap mBattleMastersMap;
 };
 

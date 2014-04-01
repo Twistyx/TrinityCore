@@ -2869,7 +2869,8 @@ void Player::SetSpectate(bool on)
 {
     if (on)
     {
-        SetSpeed(MOVE_RUN, 5.0);
+        SetSpeed(MOVE_RUN, 4.0);
+        SetCanFly(true);
         spectatorFlag = true;
 
         m_ExtraFlags |= PLAYER_EXTRA_GM_ON;
@@ -2925,6 +2926,7 @@ void Player::SetSpectate(bool on)
         spectatorFlag = false;
         RestoreDisplayId();
         UpdateSpeed(MOVE_RUN, true);
+        SetCanFly(false);
     }
     UpdateObjectVisibility();
 }

@@ -205,6 +205,14 @@ enum ArenaType
     ARENA_TYPE_5v5          = 5
 };
 
+enum ArenaTeamSlots
+{
+    ARENA_SLOT_2v2      = 0,
+    ARENA_SLOT_3v3      = 1,
+    ARENA_SLOT_5v5      = 2,
+    MAX_SLOT
+};
+
 enum BattlegroundType
 {
     TYPE_BATTLEGROUND     = 3,

@@ -944,7 +944,7 @@ bool ArenaTeam::IsFighting() const
 {
     for (MemberList::const_iterator itr = Members.begin(); itr != Members.end(); ++itr)
         if (Player* player = ObjectAccessor::FindPlayer(itr->Guid))
-            if (player->GetMap()->IsBattleArena())
+            if (!player->isSpectator() && player->GetMap()->IsBattleArena())
                 return true;
 
     return false;
