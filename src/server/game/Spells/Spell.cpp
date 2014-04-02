@@ -2516,52 +2516,44 @@ void Spell::DoAllEffectOnTarget(TargetInfo* target)
         if (canEffectTrigger && missInfo != SPELL_MISS_REFLECT)
             caster->ProcDamageAndSpell(unitTarget, procAttacker, procVictim, procEx, addhealth, m_attackType, m_spellInfo, m_triggeredByAuraSpell);
     }
-    // Do damage and triggers
-    else if (m_damage > 0)
+    else 
     {
         // Fill base damage struct (unitTarget - is real spell target)
         SpellNonMeleeDamage damageInfo(caster, unitTarget, m_spellInfo->Id, m_spellSchoolMask);
-
-        // Add bonuses and fill damageInfo struct
-        caster->CalculateSpellDamageTaken(&damageInfo, m_damage, m_spellInfo, m_attackType,  target->crit);
-        caster->DealDamageMods(damageInfo.target, damageInfo.damage, &damageInfo.absorb);
-
-        // Send log damage message to client
-        caster->SendSpellNonMeleeDamageLog(&damageInfo);
-
         procEx |= createProcExtendMask(&damageInfo, missInfo);
-        procVictim |= PROC_FLAG_TAKEN_DAMAGE;
 
-        // Do triggers for unit (reflect triggers passed on hit phase for correct drop charge)
+        if (m_damage > 0)
+        {
+            // Add bonuses and fill damageInfo struct
+            caster->CalculateSpellDamageTaken(&damageInfo, m_damage, m_spellInfo, m_attackType,  target->crit);
+            caster->DealDamageMods(damageInfo.target, damageInfo.damage, &damageInfo.absorb);
+
+            // Send log damage message to client
+            caster->SendSpellNonMeleeDamageLog(&damageInfo);
+
+            procVictim |= PROC_FLAG_TAKEN_DAMAGE;
+
+            m_damage = damageInfo.damage;
+
+            caster->DealSpellDamage(&damageInfo, true);
+        }
+        else
+        {
+            // Failed Pickpocket, reveal rogue
+            if (missInfo == SPELL_MISS_RESIST && m_spellInfo->AttributesCu & SPELL_ATTR0_CU_PICKPOCKET && unitTarget->GetTypeId() == TYPEID_UNIT)
+            {
+                m_caster->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_TALK);
+                if (unitTarget->ToCreature()->IsAIEnabled)
+                    unitTarget->ToCreature()->AI()->AttackStart(m_caster);
+            }
+        }
+        // Do triggers for unit (reflect triggers passed on hit phase for correct drop charge) (triggers arent dependent to damages)
         if (canEffectTrigger && missInfo != SPELL_MISS_REFLECT)
         {
             caster->ProcDamageAndSpell(unitTarget, procAttacker, procVictim, procEx, damageInfo.damage, m_attackType, m_spellInfo, m_triggeredByAuraSpell);
-            if (caster->GetTypeId() == TYPEID_PLAYER && (m_spellInfo->Attributes & SPELL_ATTR0_STOP_ATTACK_TARGET) == 0 &&
-               (m_spellInfo->DmgClass == SPELL_DAMAGE_CLASS_MELEE || m_spellInfo->DmgClass == SPELL_DAMAGE_CLASS_RANGED))
+            if (caster->GetTypeId() == TYPEID_PLAYER && (m_spellInfo->Attributes & SPELL_ATTR0_STOP_ATTACK_TARGET) == 0 /*&&
+               (m_spellInfo->DmgClass == SPELL_DAMAGE_CLASS_MELEE || m_spellInfo->DmgClass == SPELL_DAMAGE_CLASS_RANGED)*/)
                 caster->ToPlayer()->CastItemCombatSpell(unitTarget, m_attackType, procVictim, procEx);
-        }
-
-
-        m_damage = damageInfo.damage;
-
-        caster->DealSpellDamage(&damageInfo, true);
-    }
-    // Passive spell hits/misses or active spells only misses (only triggers)
-    else
-    {
-        // Fill base damage struct (unitTarget - is real spell target)
-        SpellNonMeleeDamage damageInfo(caster, unitTarget, m_spellInfo->Id, m_spellSchoolMask);
-        procEx |= createProcExtendMask(&damageInfo, missInfo);
-        // Do triggers for unit (reflect triggers passed on hit phase for correct drop charge)
-        if (canEffectTrigger && missInfo != SPELL_MISS_REFLECT)
-            caster->ProcDamageAndSpell(unit, procAttacker, procVictim, procEx, 0, m_attackType, m_spellInfo, m_triggeredByAuraSpell);
-
-        // Failed Pickpocket, reveal rogue
-        if (missInfo == SPELL_MISS_RESIST && m_spellInfo->AttributesCu & SPELL_ATTR0_CU_PICKPOCKET && unitTarget->GetTypeId() == TYPEID_UNIT)
-        {
-            m_caster->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_TALK);
-            if (unitTarget->ToCreature()->IsAIEnabled)
-                unitTarget->ToCreature()->AI()->AttackStart(m_caster);
         }
     }
 
