@@ -936,9 +936,10 @@ bool Guardian::InitStatsForLevel(uint8 petlevel)
             SetUInt32Value(UNIT_FIELD_PETNEXTLEVELEXP, uint32(sObjectMgr->GetXPForLevel(petlevel)*PET_XP_FACTOR));
             //these formula may not be correct; however, it is designed to be close to what it should be
             //this makes dps 0.5 of pets level
-            SetBaseWeaponDamage(BASE_ATTACK, MINDAMAGE, float(petlevel - (petlevel / 4)));
+            const uint8 plvlbase = (petlevel > 10) ? (petlevel - 9) : 1; // hunters shoudn't have pets lower than 10 but just in case
+            SetBaseWeaponDamage(BASE_ATTACK, MINDAMAGE, float(plvlbase - (plvlbase / 4)));
             //damage range is then petlevel / 2
-            SetBaseWeaponDamage(BASE_ATTACK, MAXDAMAGE, float(petlevel + (petlevel / 4)));
+            SetBaseWeaponDamage(BASE_ATTACK, MAXDAMAGE, float(plvlbase + (plvlbase / 4)));
             //damage is increased afterwards as strength and pet scaling modify attack power
             break;
         }
