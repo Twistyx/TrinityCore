@@ -7648,7 +7648,7 @@ void Player::UpdateArea(uint32 newArea)
     m_areaUpdateId    = newArea;
 
     AreaTableEntry const* area = GetAreaEntryByAreaID(newArea);
-    pvpInfo.IsInFFAPvPArea = area && (area->flags & AREA_FLAG_ARENA);
+    pvpInfo.IsInFFAPvPArea = area && ((area->flags & AREA_FLAG_ARENA) || (GetAreaId() == 360));
     UpdatePvPState(true);
 
     UpdateAreaDependentAuras(newArea);
