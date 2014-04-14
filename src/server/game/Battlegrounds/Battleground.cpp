@@ -722,12 +722,17 @@ void Battleground::RewardTokenToAll(const uint32 token1, const uint32 token2, co
                 if (token2)
                     player->AddItem(token2, count);
             }
-            else if (player->GetQuestStatus(quest) == QUEST_STATUS_INCOMPLETE)
+            else
             {
-                if (token1)
-                    player->AddItem(token1, count);
-                if (token2)
-                    player->AddItem(token2, count);
+                if (player->GetQuestStatus(quest) == QUEST_STATUS_INCOMPLETE)
+                {
+                    if (token1)
+                    {
+                        player->AddItem(token1, count);
+                    }
+                    if (token2)
+                        player->AddItem(token2, count);
+                }
             }
         }
     }
@@ -824,13 +829,14 @@ void Battleground::EndBattleground(uint32 winner)
     SetStatus(STATUS_WAIT_LEAVE);
     //we must set it this way, because end time is sent in packet!
     m_EndTime = TIME_TO_AUTOREMOVE;
-
+    if (isArena())
+        RewardTokenToAll(20880, 0, 0, 50002);
     // arena rating calculation
     if (isArena() && isRated())
     {
         winnerArenaTeam = sArenaTeamMgr->GetArenaTeamById(GetArenaTeamIdForTeam(winner));
         loserArenaTeam = sArenaTeamMgr->GetArenaTeamById(GetArenaTeamIdForTeam(GetOtherTeam(winner)));
-        RewardTokenToAll(20880, 0, 0, 50002);
+        //RewardTokenToAll(20880, 0, 0, 50002);
 
         if (winnerArenaTeam && loserArenaTeam && winnerArenaTeam != loserArenaTeam)
         {
