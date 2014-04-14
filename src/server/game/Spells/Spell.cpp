@@ -2516,52 +2516,44 @@ void Spell::DoAllEffectOnTarget(TargetInfo* target)
         if (canEffectTrigger && missInfo != SPELL_MISS_REFLECT)
             caster->ProcDamageAndSpell(unitTarget, procAttacker, procVictim, procEx, addhealth, m_attackType, m_spellInfo, m_triggeredByAuraSpell);
     }
-    // Do damage and triggers
-    else if (m_damage > 0)
+    else 
     {
         // Fill base damage struct (unitTarget - is real spell target)
         SpellNonMeleeDamage damageInfo(caster, unitTarget, m_spellInfo->Id, m_spellSchoolMask);
-
-        // Add bonuses and fill damageInfo struct
-        caster->CalculateSpellDamageTaken(&damageInfo, m_damage, m_spellInfo, m_attackType,  target->crit);
-        caster->DealDamageMods(damageInfo.target, damageInfo.damage, &damageInfo.absorb);
-
-        // Send log damage message to client
-        caster->SendSpellNonMeleeDamageLog(&damageInfo);
-
         procEx |= createProcExtendMask(&damageInfo, missInfo);
-        procVictim |= PROC_FLAG_TAKEN_DAMAGE;
 
-        // Do triggers for unit (reflect triggers passed on hit phase for correct drop charge)
+        if (m_damage > 0)
+        {
+            // Add bonuses and fill damageInfo struct
+            caster->CalculateSpellDamageTaken(&damageInfo, m_damage, m_spellInfo, m_attackType,  target->crit);
+            caster->DealDamageMods(damageInfo.target, damageInfo.damage, &damageInfo.absorb);
+
+            // Send log damage message to client
+            caster->SendSpellNonMeleeDamageLog(&damageInfo);
+
+            procVictim |= PROC_FLAG_TAKEN_DAMAGE;
+
+            m_damage = damageInfo.damage;
+
+            caster->DealSpellDamage(&damageInfo, true);
+        }
+        else
+        {
+            // Failed Pickpocket, reveal rogue
+            if (missInfo == SPELL_MISS_RESIST && m_spellInfo->AttributesCu & SPELL_ATTR0_CU_PICKPOCKET && unitTarget->GetTypeId() == TYPEID_UNIT)
+            {
+                m_caster->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_TALK);
+                if (unitTarget->ToCreature()->IsAIEnabled)
+                    unitTarget->ToCreature()->AI()->AttackStart(m_caster);
+            }
+        }
+        // Do triggers for unit (reflect triggers passed on hit phase for correct drop charge) (triggers arent dependent to damages)
         if (canEffectTrigger && missInfo != SPELL_MISS_REFLECT)
         {
             caster->ProcDamageAndSpell(unitTarget, procAttacker, procVictim, procEx, damageInfo.damage, m_attackType, m_spellInfo, m_triggeredByAuraSpell);
-            if (caster->GetTypeId() == TYPEID_PLAYER && (m_spellInfo->Attributes & SPELL_ATTR0_STOP_ATTACK_TARGET) == 0 &&
-               (m_spellInfo->DmgClass == SPELL_DAMAGE_CLASS_MELEE || m_spellInfo->DmgClass == SPELL_DAMAGE_CLASS_RANGED))
+            if (caster->GetTypeId() == TYPEID_PLAYER && (m_spellInfo->Attributes & SPELL_ATTR0_STOP_ATTACK_TARGET) == 0 /*&&
+               (m_spellInfo->DmgClass == SPELL_DAMAGE_CLASS_MELEE || m_spellInfo->DmgClass == SPELL_DAMAGE_CLASS_RANGED)*/)
                 caster->ToPlayer()->CastItemCombatSpell(unitTarget, m_attackType, procVictim, procEx);
-        }
-
-
-        m_damage = damageInfo.damage;
-
-        caster->DealSpellDamage(&damageInfo, true);
-    }
-    // Passive spell hits/misses or active spells only misses (only triggers)
-    else
-    {
-        // Fill base damage struct (unitTarget - is real spell target)
-        SpellNonMeleeDamage damageInfo(caster, unitTarget, m_spellInfo->Id, m_spellSchoolMask);
-        procEx |= createProcExtendMask(&damageInfo, missInfo);
-        // Do triggers for unit (reflect triggers passed on hit phase for correct drop charge)
-        if (canEffectTrigger && missInfo != SPELL_MISS_REFLECT)
-            caster->ProcDamageAndSpell(unit, procAttacker, procVictim, procEx, 0, m_attackType, m_spellInfo, m_triggeredByAuraSpell);
-
-        // Failed Pickpocket, reveal rogue
-        if (missInfo == SPELL_MISS_RESIST && m_spellInfo->AttributesCu & SPELL_ATTR0_CU_PICKPOCKET && unitTarget->GetTypeId() == TYPEID_UNIT)
-        {
-            m_caster->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_TALK);
-            if (unitTarget->ToCreature()->IsAIEnabled)
-                unitTarget->ToCreature()->AI()->AttackStart(m_caster);
         }
     }
 
@@ -3081,6 +3073,20 @@ void Spell::prepare(SpellCastTargets const* targets, AuraEffect const* triggered
     ReSetTimer();
 
     TC_LOG_DEBUG(LOG_FILTER_SPELLS_AURAS, "Spell::prepare: spell id %u source %u caster %d customCastFlags %u mask %u", m_spellInfo->Id, m_caster->GetEntry(), m_originalCaster ? m_originalCaster->GetEntry() : -1, _triggeredCastFlags, m_targets.GetTargetMask());
+
+    if (GetCaster() && GetSpellInfo())
+    {
+        if (Player *tmpPlayer = GetCaster()->ToPlayer())
+        {
+            if (tmpPlayer->HaveSpectators())
+            {
+                SpectatorAddonMsg msg;
+                msg.SetPlayer(tmpPlayer->GetName());
+                msg.CastSpell(GetSpellInfo()->Id, GetSpellInfo()->CastTimeEntry->CastTime);
+                tmpPlayer->SendSpectatorAddonMsgToBG(msg);
+            }
+        }
+    }
 
     //Containers for channeled spells have to be set
     /// @todoApply this to all casted spells if needed
@@ -4801,6 +4807,12 @@ SpellCastResult Spell::CheckCast(bool strict)
         if (m_spellInfo->Attributes & SPELL_ATTR0_INDOORS_ONLY &&
                 m_caster->GetMap()->IsOutdoors(m_caster->GetPositionX(), m_caster->GetPositionY(), m_caster->GetPositionZ()))
             return SPELL_FAILED_ONLY_INDOORS;
+    }
+
+    if (Player *tmpPlayer = m_caster->ToPlayer())
+    {
+        if (tmpPlayer->isSpectator())
+            return SPELL_FAILED_SPELL_UNAVAILABLE;
     }
 
     // only check at first call, Stealth auras are already removed at second call

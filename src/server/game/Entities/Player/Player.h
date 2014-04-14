@@ -28,6 +28,8 @@
 #include "QuestDef.h"
 #include "SpellMgr.h"
 #include "Unit.h"
+#include "Unit.h"
+#include "SpectatorAddon.h"
 
 #include <string>
 #include <vector>
@@ -1166,6 +1168,14 @@ class Player : public Unit, public GridObject<Player>
         void SetHas310Flyer(bool on) { if (on) m_ExtraFlags |= PLAYER_EXTRA_HAS_310_FLYER; else m_ExtraFlags &= ~PLAYER_EXTRA_HAS_310_FLYER; }
         void SetPvPDeath(bool on) { if (on) m_ExtraFlags |= PLAYER_EXTRA_PVP_DEATH; else m_ExtraFlags &= ~PLAYER_EXTRA_PVP_DEATH; }
 
+        bool HaveSpectators();
+        void SendSpectatorAddonMsgToBG(SpectatorAddonMsg msg);
+        bool isSpectateCanceled() { return spectateCanceled; }
+        void CancelSpectate()     { spectateCanceled = true; }
+        Unit* getSpectateFrom()   { return spectateFrom; }
+        bool isSpectator() const  { return spectatorFlag; }
+        void SetSpectate(bool on);
+
         void GiveXP(uint32 xp, Unit* victim, float group_rate=1.0f);
         void GiveLevel(uint8 level);
 
@@ -1533,11 +1543,12 @@ class Player : public Unit, public GridObject<Player>
         size_t GetRewardedQuestCount() const { return m_RewardedQuests.size(); }
         bool IsQuestRewarded(uint32 quest_id) const;
 
+        uint64 GetSelection() const { return m_curSelection; }
         Unit* GetSelectedUnit() const;
         Player* GetSelectedPlayer() const;
 
         void SetTarget(uint64 /*guid*/) OVERRIDE { } /// Used for serverside target changes, does not apply to players
-        void SetSelection(uint64 guid) { SetUInt64Value(UNIT_FIELD_TARGET, guid); }
+        void SetSelection(uint64 guid);
 
         uint8 GetComboPoints() const { return m_comboPoints; }
         uint64 GetComboTarget() const { return m_comboTarget; }
@@ -2606,6 +2617,8 @@ class Player : public Unit, public GridObject<Player>
 
         MapReference m_mapRef;
 
+        uint64 m_curSelection;
+
         void UpdateCharmedAI();
 
         uint32 m_lastFallTime;
@@ -2647,6 +2660,11 @@ class Player : public Unit, public GridObject<Player>
         uint32 _pendingBindTimer;
 
         uint32 _activeCheats;
+
+        // spectator system
+        bool spectatorFlag;
+        bool spectateCanceled;
+        Unit *spectateFrom;
 };
 
 void AddItemsSetItem(Player*player, Item* item);

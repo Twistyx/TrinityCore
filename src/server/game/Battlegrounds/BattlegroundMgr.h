@@ -32,6 +32,8 @@ typedef UNORDERED_MAP<uint32, BattlegroundTypeId> BattleMastersMap;
 
 #define BATTLEGROUND_ARENA_POINT_DISTRIBUTION_DAY 86400     // seconds in a day
 #define WS_ARENA_DISTRIBUTION_TIME 20001                    // Custom worldstate
+#define TOP_ARNEA_QUERY_REFRESH_DELAY 60                    // 1min
+#define MAX_TOP 14                                          // Max result 
 
 struct CreateBattlegroundData
 {
@@ -90,6 +92,8 @@ class BattlegroundMgr
         Battleground* GetBattlegroundTemplate(BattlegroundTypeId bgTypeId);
         Battleground* CreateNewBattleground(BattlegroundTypeId bgTypeId, PvPDifficultyEntry const* bracketEntry, uint8 arenaType, bool isRated);
 
+        BattlegroundContainer GetBattlegroundsByType(BattlegroundTypeId bgTypeId);
+
         void AddBattleground(Battleground* bg);
         void RemoveBattleground(BattlegroundTypeId bgTypeId, uint32 instanceId);
         void AddToBGFreeSlotQueue(BattlegroundTypeId bgTypeId, Battleground* bg);
@@ -113,6 +117,7 @@ class BattlegroundMgr
 
         bool isArenaTesting() const { return m_ArenaTesting; }
         bool isTesting() const { return m_Testing; }
+        bool IsArenaType(BattlegroundTypeId bgTypeId);
 
         static BattlegroundQueueTypeId BGQueueTypeId(BattlegroundTypeId bgTypeId, uint8 arenaType);
         static BattlegroundTypeId BGTemplateId(BattlegroundQueueTypeId bgQueueTypeId);
@@ -126,6 +131,7 @@ class BattlegroundMgr
         uint32 GetRatingDiscardTimer()  const;
         void InitAutomaticArenaPointDistribution();
         void LoadBattleMastersEntry();
+        uint32 GetTopArenaTeamByRank(const uint8 type, const uint8 rank);
         BattlegroundTypeId GetBattleMasterBG(uint32 entry) const
         {
             BattleMastersMap::const_iterator itr = mBattleMastersMap.find(entry);
@@ -137,11 +143,11 @@ class BattlegroundMgr
     private:
         bool CreateBattleground(CreateBattlegroundData& data);
         uint32 CreateClientVisibleInstanceId(BattlegroundTypeId bgTypeId, BattlegroundBracketId bracket_id);
-        static bool IsArenaType(BattlegroundTypeId bgTypeId);
         BattlegroundTypeId GetRandomBG(BattlegroundTypeId id);
 
         typedef std::map<BattlegroundTypeId, BattlegroundData> BattlegroundDataContainer;
         BattlegroundDataContainer bgDataStore;
+        BattlegroundContainer m_Battlegrounds[MAX_BATTLEGROUND_TYPE_ID];
 
         BattlegroundQueue m_BattlegroundQueues[MAX_BATTLEGROUND_QUEUE_TYPES];
 
@@ -154,6 +160,11 @@ class BattlegroundMgr
         uint32 m_AutoDistributionTimeChecker;
         bool   m_ArenaTesting;
         bool   m_Testing;
+
+        // Arena Top Query and refresh time
+        uint32 m_top[MAX_SLOT][MAX_TOP];
+        time_t m_nextUpdate[MAX_SLOT];
+
         BattleMastersMap mBattleMastersMap;
 };
 

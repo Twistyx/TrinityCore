@@ -19,6 +19,7 @@ set(scripts_STAT_SRCS
   Custom/Transmogrification.h
   Custom/Transmogrification.cpp
   Custom/Transmogrifier.cpp
+  Custom/arena_spectator.cpp
 )
 
 message("  -> Prepared: Custom")

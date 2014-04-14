@@ -687,6 +687,7 @@ void AddSC_npc_top_arena();
 void AddSC_cs_world_chat();
 void AddSC_custom_immvp_scripts();
 void AddSC_CPWS_Transmogrification();
+void AddSC_arena_spectator_script();
 
 #endif
 
@@ -1416,6 +1417,7 @@ void AddCustomScripts()
 	AddSC_npc_top_arena();
 	AddSC_cs_world_chat();
 	AddSC_CPWS_Transmogrification();
+	AddSC_arena_spectator_script();
 #endif
 }
 

@@ -53,7 +53,16 @@
 BattlegroundMgr::BattlegroundMgr() :
     m_NextRatedArenaUpdate(sWorld->getIntConfig(CONFIG_ARENA_RATED_UPDATE_TIMER)),
     m_AutoDistributionTimeChecker(0), m_ArenaTesting(false), m_Testing(false)
-{ }
+{
+    for (uint8 i = 0; i < MAX_TOP; i++)
+    {
+        m_top[ARENA_SLOT_2v2][i] = 0;
+        m_top[ARENA_SLOT_3v3][i] = 0;
+        m_top[ARENA_SLOT_5v5][i] = 0;
+    }
+    m_nextUpdate[ARENA_SLOT_2v2] = 0;
+    m_nextUpdate[ARENA_SLOT_3v3] = 0;
+}
 
 BattlegroundMgr::~BattlegroundMgr()
 {
@@ -440,6 +449,14 @@ Battleground* BattlegroundMgr::GetBattlegroundThroughClientInstance(uint32 insta
     }
 
     return NULL;
+}
+
+BattlegroundContainer BattlegroundMgr::GetBattlegroundsByType(BattlegroundTypeId bgTypeId)
+{
+    BattlegroundDataContainer::const_iterator it = bgDataStore.find(bgTypeId);
+    if (it == bgDataStore.end())
+        return m_Battlegrounds[bgTypeId];
+    return (it->second.m_Battlegrounds);
 }
 
 Battleground* BattlegroundMgr::GetBattleground(uint32 instanceId, BattlegroundTypeId bgTypeId)
@@ -1209,3 +1226,33 @@ void BattlegroundMgr::RemoveBattleground(BattlegroundTypeId bgTypeId, uint32 ins
     bgDataStore[bgTypeId].m_Battlegrounds.erase(instanceId);
 }
 
+uint32 BattlegroundMgr::GetTopArenaTeamByRank(const uint8 type, const uint8 rank)
+{
+    // get slot from type
+    const uint8 slot = (type == 5) ? 2 : type - 2;
+
+    // stop if invalid slot
+    if (slot > MAX_SLOT)
+        return NULL;
+
+    const time_t currentTime = time(NULL);
+    if (!m_nextUpdate[slot] || m_nextUpdate[slot] < currentTime)
+    {
+        std::stringstream ss;
+        ss << "SELECT arenaTeamId FROM arena_team WHERE type='" << (int)type << "' ORDER BY rating DESC LIMIT " << MAX_TOP;
+        QueryResult result = CharacterDatabase.Query(ss.str().c_str());
+        m_nextUpdate[slot] = currentTime + TOP_ARNEA_QUERY_REFRESH_DELAY;
+
+        uint8   rank = 0;
+        Field*  fields;
+        do
+        {
+            fields = result->Fetch();
+            m_top[slot][rank] = fields[0].GetUInt32();
+            rank++;
+        }
+        while (result->NextRow());
+    }
+
+    return m_top[slot][rank];
+}

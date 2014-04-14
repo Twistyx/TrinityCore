@@ -103,7 +103,34 @@ void Appender::write(LogMessage& message)
     if (!message.prefix.empty())
         message.prefix.push_back(' ');
 
-    _write(message);
+    switch (message.type)
+    {
+        case LOG_FILTER_SQL:
+        case LOG_FILTER_ARENAS:
+        case LOG_FILTER_SPELLS_AURAS:
+        case LOG_FILTER_PLAYER:
+        case LOG_FILTER_ACHIEVEMENTSYS:
+            break;
+        case LOG_FILTER_WORLDSERVER:
+            message.text.insert(0, "\033[1m\033[31m");
+        case LOG_FILTER_SERVER_LOADING:
+        {
+            if (message.text.find("Loading") != std::string::npos)
+                message.text.insert(0, "\033[36m");
+            else if (message.text.find(">> Loaded") != std::string::npos)
+                message.text.insert(0, "\033[32m");
+            else if (message.text.find("Starting") != std::string::npos)
+                message.text.insert(0, "\033[33m");
+            else
+                message.text.insert(0, "\033[37m");
+        }
+        default:
+        {
+            message.text.append("\033[0m");
+            _write(message);
+            break;
+        }
+    }
 }
 
 const char* Appender::getLogLevelString(LogLevel level)
