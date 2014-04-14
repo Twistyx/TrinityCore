@@ -7630,6 +7630,30 @@ void Player::UpdateArea(uint32 newArea)
 
 void Player::UpdateZone(uint32 newZone, uint32 newArea)
 {
+    switch (newZone)
+    {
+        case 33: // strangle
+        case 1977: // zulgurub
+        case 3277: // warsong
+        case 3358: // arathi
+        case 3698: // nagrand
+        case 3702: // tranchantes
+        case 3968: // lordearon
+            break;
+        case 8: // Swamp of sorrow
+            TeleportTo(0, -13191.237305f, -1886.265503f, 0.0016f, GetOrientation());
+            return;
+        case 10: // Duskwood
+            TeleportTo(0, -11335.248047f, -379.428772f, 65.3961f, GetOrientation());
+            return;
+        case 40: // Westfall
+            TeleportTo(0, -11709.507812f, 1304.991577f, 1.0409f, GetOrientation());
+            return;
+        default:
+            TeleportTo(0, m_homebindX, m_homebindY, m_homebindZ, GetOrientation());
+            return;
+    }
+
     if (m_zoneUpdateId != newZone)
     {
         sOutdoorPvPMgr->HandlePlayerLeaveZone(this, m_zoneUpdateId);
