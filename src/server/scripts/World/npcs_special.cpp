@@ -2022,8 +2022,10 @@ public:
 
     bool OnGossipHello(Player* player, Creature* creature) OVERRIDE
     {
-        player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_XP_OFF, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1);
-        player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_XP_ON, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 2);
+        if (player->HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_NO_XP_GAIN))
+            player->ADD_GOSSIP_ITEM_EXTENDED(GOSSIP_ICON_CHAT, GOSSIP_XP_ON, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 2, "Are you sure you want to do this ?\nCost :", EXP_COST, false);
+        else
+            player->ADD_GOSSIP_ITEM_EXTENDED(GOSSIP_ICON_CHAT, GOSSIP_XP_OFF, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1, "Are you sure you want to do this ?\nCost :", EXP_COST, false);
         player->PlayerTalkClass->SendGossipMenu(GOSSIP_TEXT_EXP, creature->GetGUID());
         return true;
     }
@@ -2057,11 +2059,13 @@ public:
             {
                 player->ModifyMoney(-EXP_COST);
                 player->RemoveFlag(PLAYER_FLAGS, PLAYER_FLAGS_NO_XP_GAIN);
+                player->UpdatePvP(false);
             }
             else if (!noXPGain)
             {
                 player->ModifyMoney(-EXP_COST);
                 player->SetFlag(PLAYER_FLAGS, PLAYER_FLAGS_NO_XP_GAIN);
+                player->UpdatePvP(true);
             }
         }
         player->PlayerTalkClass->SendCloseGossip();

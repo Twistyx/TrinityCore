@@ -3231,6 +3231,7 @@ void Player::GiveLevel(uint8 level)
                     SetByteFlag(PLAYER_FIELD_BYTES, 1, 0x01);
             }
 
+    UpdatePvPState();
     sScriptMgr->OnPlayerLevelChanged(this, oldLevel);
 }
 
@@ -20293,15 +20294,18 @@ void Player::ResetContestedPvP()
     m_contestedPvPTimer = 0;
 }
 
-void Player::UpdatePvPFlag(time_t /*currTime*/)
+void Player::UpdatePvPFlag(time_t currTime)
 {
-    //if (!IsPvP())
-    //    return;
+    if (!IsPvP())
+        return;
 
-    //if (!pvpInfo.EndTimer || currTime < (pvpInfo.EndTimer + 300) || pvpInfo.IsHostile)
-    //    return;
+    if (!pvpInfo.EndTimer || currTime < (pvpInfo.EndTimer + 300) || pvpInfo.IsHostile)
+        return;
 
-    UpdatePvP(true);
+    if (getLevel() == 19 || HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_NO_XP_GAIN))
+        return;
+
+    UpdatePvP(false);
 }
 
 void Player::UpdateDuelFlag(time_t currTime)
@@ -21791,22 +21795,22 @@ void Player::UpdatePvPState(bool onlyFFA)
     if (onlyFFA)
         return;
 
-    //if (pvpInfo.IsHostile)                               // in hostile area
-    //{
-    //    if (!IsPvP() || pvpInfo.EndTimer)
-    //        UpdatePvP(true, true);
-    //}
-    //else                                                    // in friendly area
-    //{
-    //    if (IsPvP() && !HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_IN_PVP) && !pvpInfo.EndTimer)
-    //        pvpInfo.EndTimer = time(NULL);                  // start toggle-off
-    //}
-    UpdatePvP(true, true); // force pvp flag
+    if (pvpInfo.IsHostile)                               // in hostile area
+    {
+        if ((getLevel() == 19) || HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_NO_XP_GAIN) || !IsPvP() || pvpInfo.EndTimer)
+            UpdatePvP(true, true);
+    }
+    else                                                    // in friendly area
+    {
+        if (IsPvP() && !HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_IN_PVP) && !pvpInfo.EndTimer)
+            pvpInfo.EndTimer = time(NULL);                  // start toggle-off
+    }
 }
 
 void Player::SetPvP(bool state)
 {
-    state = true;
+    if ((getLevel() == 19) || HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_NO_XP_GAIN))
+        state = true;
     Unit::SetPvP(state);
     for (ControlList::iterator itr = m_Controlled.begin(); itr != m_Controlled.end(); ++itr)
         (*itr)->SetPvP(state);
@@ -23098,8 +23102,18 @@ void Player::learnSkillRewardedSpells(uint32 skill_id, uint32 skill_value)
 
         if (sSpellMgr->GetSpellInfo(pAbility->spellId))
         {
+            if (pAbility->spellId == 53125 ||
+                pAbility->spellId == 53662 ||
+                pAbility->spellId == 53663 ||
+                pAbility->spellId == 53120 ||
+                pAbility->spellId == 53121 ||
+                pAbility->spellId == 53122 ||
+                pAbility->spellId == 55428 ||
+                pAbility->spellId == 55480 ||
+                pAbility->spellId == 55500)
+                continue;
             // need unlearn spell
-            if (skill_value < pAbility->req_skill_value)
+            else if (skill_value < pAbility->req_skill_value)
                 removeSpell(pAbility->spellId);
             // need learn
             else if (!IsInWorld())
