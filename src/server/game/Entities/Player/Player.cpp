@@ -20296,13 +20296,16 @@ void Player::ResetContestedPvP()
 
 void Player::UpdatePvPFlag(time_t currTime)
 {
+    if (getLevel() == 19 || HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_NO_XP_GAIN))
+    {
+        UpdatePvP(true);
+        return;
+    }
+
     if (!IsPvP())
         return;
 
     if (!pvpInfo.EndTimer || currTime < (pvpInfo.EndTimer + 300) || pvpInfo.IsHostile)
-        return;
-
-    if (getLevel() == 19 || HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_NO_XP_GAIN))
         return;
 
     UpdatePvP(false);
