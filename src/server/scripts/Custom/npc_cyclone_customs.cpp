@@ -445,6 +445,46 @@ public:
     }
 };
 
+class npc_ethereum : public CreatureScript
+{
+public:
+    npc_ethereum() : CreatureScript("npc_ethereum") { }
+
+    struct npc_ethereumAI : public ScriptedAI
+    {
+        npc_ethereumAI(Creature* creature) : ScriptedAI(creature) {}
+
+        void Reset() OVERRIDE
+        {
+            buffTimer = 1500;
+        }
+
+        void JustRespawned() OVERRIDE
+        {
+            Reset();
+        }
+
+        void UpdateAI(uint32 diff) OVERRIDE
+        {
+            if (buffTimer <= diff)
+            {
+                buffTimer = 35000;
+                me->HandleEmoteCommand(EMOTE_ONESHOT_BOW);
+            }
+            else
+                buffTimer -= diff;
+        }
+
+    private:
+        uint32 buffTimer;
+    };
+
+    CreatureAI* GetAI(Creature* creature) const OVERRIDE
+    {
+        return new npc_ethereumAI(creature);
+    }
+};
+
 class npc_gamon : public CreatureScript
 {
 public:
@@ -719,6 +759,7 @@ void AddSC_cyclone_customs()
     new npc_title_giver();
     new npc_squirel();
     new npc_gamon();
+    new npc_ethereum();
     new npc_bell_trigger();
     new npc_profession();
     new npc_suffix();

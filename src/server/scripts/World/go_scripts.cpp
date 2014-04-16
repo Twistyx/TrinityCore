@@ -220,21 +220,16 @@ public:
 ## go_ethereum_prison
 ######*/
 
-enum EthereumPrison
-{
-    SPELL_REP_LC        = 39456,
-    SPELL_REP_SHAT      = 39457,
-    SPELL_REP_CE        = 39460,
-    SPELL_REP_CON       = 39474,
-    SPELL_REP_KT        = 39475,
-    SPELL_REP_SPOR      = 39476
-};
-
 const uint32 NpcPrisonEntry[] =
 {
-    22810, 22811, 22812, 22813, 22814, 22815,               //good guys
-    20783, 20784, 20785, 20786, 20788, 20789, 20790         //bad guys
+    22810, 22811, 22812, 22813, 22814, 22815               //good guys
 };
+
+const uint32 SpellReputationEntry[] =
+{
+    39460, 39456, 39457, 39474, 39476, 39475               //good guys
+};
+
 
 class go_ethereum_prison : public GameObjectScript
 {
@@ -246,32 +241,8 @@ public:
         go->UseDoorOrButton();
         int Random = rand() % (sizeof(NpcPrisonEntry) / sizeof(uint32));
 
-        if (Creature* creature = player->SummonCreature(NpcPrisonEntry[Random], go->GetPositionX(), go->GetPositionY(), go->GetPositionZ(), go->GetAngle(player),
-            TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 30000))
-        {
-            if (!creature->IsHostileTo(player))
-            {
-                if (FactionTemplateEntry const* pFaction = creature->GetFactionTemplateEntry())
-                {
-                    uint32 Spell = 0;
-
-                    switch (pFaction->faction)
-                    {
-                        case 1011: Spell = SPELL_REP_LC; break;
-                        case 935: Spell = SPELL_REP_SHAT; break;
-                        case 942: Spell = SPELL_REP_CE; break;
-                        case 933: Spell = SPELL_REP_CON; break;
-                        case 989: Spell = SPELL_REP_KT; break;
-                        case 970: Spell = SPELL_REP_SPOR; break;
-                    }
-
-                    if (Spell)
-                        creature->CastSpell(player, Spell, false);
-                    else
-                        TC_LOG_ERROR(LOG_FILTER_TSCR, "go_ethereum_prison summoned Creature (entry %u) but faction (%u) are not expected by script.", creature->GetEntry(), creature->getFaction());
-                }
-            }
-        }
+        player->SummonCreature(NpcPrisonEntry[Random], go->GetPositionX(), go->GetPositionY(), go->GetPositionZ(), go->GetAngle(player), TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 15000);
+        player->CastSpell(player, SpellReputationEntry[Random], 0);
 
         return false;
     }
