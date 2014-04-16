@@ -58,12 +58,18 @@ public:
 
         void Reset() OVERRIDE
         {
+
+            m_isSleeping = false;
             globalCooldown = 0;
-            buffTimer = 0;
+            buffTimer = urand(10000, 20000);
         }
 
         void EnterCombat(Unit* who) OVERRIDE
         {
+            me->SetReactState(REACT_DEFENSIVE);
+            me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PACIFIED | UNIT_FLAG_STUNNED | UNIT_FLAG_DISABLE_MOVE);
+            me->RemoveAurasDueToSpell(26115);
+            m_isSleeping = false;
             if (me->GetEntry() == NPC_CENARION_HOLD_INFANTRY)
                 Talk(SAY_GUARD_SIL_AGGRO, who->GetGUID());
             if (SpellInfo const* spell = me->reachWithSpellAttack(who))
@@ -78,27 +84,49 @@ public:
             else
                 globalCooldown = 0;
 
+            if (me->IsInCombat() && m_isSleeping)
+            {
+                me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PACIFIED | UNIT_FLAG_STUNNED | UNIT_FLAG_DISABLE_MOVE);
+                me->RemoveAurasDueToSpell(26115);
+                m_isSleeping = false;
+            }
+
             //Buff timer (only buff when we are alive and not in combat
             if (me->IsAlive() && !me->IsInCombat())
             {
                 if (buffTimer <= diff)
                 {
-                    //Find a spell that targets friendly and applies an aura (these are generally buffs)
-                    SpellInfo const* info = SelectSpell(me, 0, 0, SELECT_TARGET_ANY_FRIEND, 0, 0, 0, 0, SELECT_EFFECT_AURA);
-
-                    if (info && !globalCooldown)
+                    if (!globalCooldown)
                     {
-                        //Cast the buff spell
-                        DoCast(me, info->Id);
+                        if (!(sGameEventMgr->GetActiveEventList().find(66) != sGameEventMgr->GetActiveEventList().end()))
+                        {
+                            if (m_isSleeping)
+                            {
+                                me->RemoveAurasDueToSpell(26115);
+                                me->SetReactState(REACT_AGGRESSIVE);
+                                me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PACIFIED | UNIT_FLAG_STUNNED | UNIT_FLAG_DISABLE_MOVE);
+                                m_isSleeping = false;
+                            }
+                        }
+                        else if (!m_isSleeping)
+                        {
+                            me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PACIFIED | UNIT_FLAG_STUNNED | UNIT_FLAG_DISABLE_MOVE);
+                            me->SetReactState(REACT_PASSIVE);
+                            Aura::TryRefreshStackOrCreate(sSpellMgr->GetSpellInfo(26115), MAX_EFFECT_MASK, me, me);
+                            m_isSleeping = true;
+                        }
 
                         //Set our global cooldown
                         globalCooldown = GENERIC_CREATURE_COOLDOWN;
 
-                        //Set our timer to 10 minutes before rebuff
-                        buffTimer = 600000;
-                    }                                                   //Try again in 30 seconds
-                    else buffTimer = 30000;
-                } else buffTimer -= diff;
+                        //Set our timer to 30 sec before rebuff
+                        buffTimer = urand(20000, 40000);
+                    } //Try again in 15 seconds
+                    else
+                        buffTimer = urand(10000, 20000);
+                }
+                else
+                    buffTimer -= diff;
             }
 
             //Return since we have no target
@@ -221,23 +249,17 @@ public:
 
         void ReceiveEmote(Player* player, uint32 textEmote) OVERRIDE
         {
-            switch (me->GetEntry())
-            {
-                case NPC_STORMWIND_CITY_GUARD:
-                case NPC_STORMWIND_CITY_PATROLLER:
-                case NPC_ORGRIMMAR_GRUNT:
-                    break;
-                default:
-                    return;
-            }
 
             if (!me->IsFriendlyTo(player))
                 return;
 
+            if (m_isSleeping)
+                return;
             DoReplyToTextEmote(textEmote);
         }
 
     private:
+        bool m_isSleeping;
         uint32 globalCooldown;
         uint32 buffTimer;
     };

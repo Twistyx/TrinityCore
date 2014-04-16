@@ -361,6 +361,142 @@ public:
     }
 };
 
+class go_booty_bay_alarm_bell : public GameObjectScript
+{
+public:
+    go_booty_bay_alarm_bell() : GameObjectScript("go_booty_bay_alarm_bell") { }
+
+    bool OnGossipHello(Player* player, GameObject* go) OVERRIDE
+    {
+        if (!player)
+            return true;
+        if (player->FindNearestCreature(90061, 5.0f, true))
+            return true;
+
+        if (!(sGameEventMgr->GetActiveEventList().find(66) != sGameEventMgr->GetActiveEventList().end()))
+            return true;
+
+        //Add check if current time < 8h - 900000ms, or return.
+        // Summon trigger
+        player->SummonCreature(90061, go->GetPositionX(), go->GetPositionY(), go->GetPositionZ(), go->GetAngle(player), TEMPSUMMON_TIMED_DESPAWN, 900000);
+
+        // Play sound to all
+        WorldPacket data(SMSG_PLAY_SOUND, 4);
+        data << uint32(9154) << player->GetGUID();
+        sWorld->SendGlobalMessage(&data);
+
+        player->TeleportTo(0, -14354.72460f, 417.546265f, 41.029716f, player->GetOrientation());
+        return true;
+    }
+};
+
+class npc_bell_trigger : public CreatureScript
+{
+public:
+    npc_bell_trigger() : CreatureScript("npc_bell_trigger") { }
+
+    struct npc_bell_triggerAI : public ScriptedAI
+    {
+        npc_bell_triggerAI(Creature* creature) : ScriptedAI(creature) {}
+
+        void Reset() OVERRIDE
+        {
+            alarmTimer = 150;
+            firstTime = true;
+        }
+
+        void JustRespawned() OVERRIDE
+        {
+            Reset();
+        }
+
+        void UpdateAI(uint32 diff) OVERRIDE
+        {
+            if (alarmTimer <= diff)
+            {
+                alarmTimer = 600000;
+                GameObject* bell = GetClosestGameObjectWithEntry(me, 175948, 0.5f);
+                if (bell)
+                {
+                    bell->SendCustomAnim(0);
+                    bell->PlayDirectSound(9154, 0);
+                    if (!firstTime)
+                        sGameEventMgr->StartEvent(66, true);
+                    else
+                    {
+                        sGameEventMgr->StopEvent(66, true);
+                        DoCastAOE(51490, true);
+                        firstTime = false;
+                    }
+                }   
+            }
+            else
+                alarmTimer -= diff;
+        }
+
+    private:
+        uint32 alarmTimer;
+        bool firstTime;
+    };
+
+    CreatureAI* GetAI(Creature* creature) const OVERRIDE
+    {
+        return new npc_bell_triggerAI(creature);
+    }
+};
+
+class npc_gamon : public CreatureScript
+{
+public:
+    npc_gamon() : CreatureScript("npc_gamon") { }
+
+    CreatureAI* GetAI(Creature* creature) const OVERRIDE
+    {
+        return new npc_gamonAI(creature);
+    }
+
+    struct npc_gamonAI : public ScriptedAI
+    {
+        npc_gamonAI(Creature* creature) : ScriptedAI(creature) {}
+
+        void UpdateAI(uint32 diff) OVERRIDE
+        {
+        }
+
+        void ReceiveEmote(Player* player, uint32 emote) OVERRIDE
+        {
+            switch (emote)
+            {
+                case TEXT_EMOTE_DANCE:
+                    EnterEvadeMode();
+                    break;
+                case TEXT_EMOTE_RUDE:
+                case TEXT_EMOTE_CHICKEN:
+                    if (me->IsWithinDistInMap(player, 5)) {
+                        player->CastSpell(player, 50085, 0); // Spell Slow Fall
+                        DoCast(player, 11027, 0); // Spell kick
+                    }
+                    else
+                        me->HandleEmoteCommand(EMOTE_ONESHOT_RUDE);
+                    break;
+                case TEXT_EMOTE_WAVE:
+                    if (me->IsWithinDistInMap(player, 5))
+                        DoCast(player, 6754, false);
+                    else
+                        me->HandleEmoteCommand(EMOTE_ONESHOT_WAVE);
+                    break;
+                case TEXT_EMOTE_BOW:
+                    me->HandleEmoteCommand(EMOTE_ONESHOT_BOW);
+                    break;
+                case TEXT_EMOTE_KISS:
+                    me->HandleEmoteCommand(EMOTE_ONESHOT_FLEX);
+                    break;
+            }
+        }
+    };
+};
+
+
 class npc_title_vendor : public CreatureScript 
 {
 public:
@@ -577,10 +713,13 @@ public:
 };
 void AddSC_cyclone_customs() 
 {
+    new go_booty_bay_alarm_bell();
     new npc_talent();
     new npc_title_vendor();
     new npc_title_giver();
     new npc_squirel();
+    new npc_gamon();
+    new npc_bell_trigger();
     new npc_profession();
     new npc_suffix();
     new npc_teleport_guard();
