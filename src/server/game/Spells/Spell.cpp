@@ -3213,6 +3213,9 @@ void Spell::cast(bool skipCheck)
 
     SetExecutedCurrently(true);
 
+    if (m_spellInfo->Id == 2764)
+        m_caster->SetInCombatState(true, NULL);
+
     if (!(_triggeredCastFlags & TRIGGERED_IGNORE_SET_FACING))
         if (m_caster->GetTypeId() == TYPEID_UNIT && m_targets.GetObjectTarget() && m_caster != m_targets.GetObjectTarget())
             m_caster->SetInFront(m_targets.GetObjectTarget());
