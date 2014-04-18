@@ -3043,19 +3043,22 @@ void Spell::prepare(SpellCastTargets const* targets, AuraEffect const* triggered
 
     if (Player* player = m_caster->ToPlayer())
     {
-        if (!player->GetCommandStatus(CHEAT_CASTTIME)
-            && m_spellInfo->Effects[0].Effect != SPELL_EFFECT_ENCHANT_ITEM
-            && m_spellInfo->Effects[0].Effect != SPELL_EFFECT_APPLY_GLYPH
-            && !player->HasAura(SPELL_PREPARATION)
-            && !player->HasAura(SPELL_ARENA_PREPARATION))
+        if (m_CastItem && (m_CastItem->GetEntry() == 4403)) // special case for Portable Bronze Mortar
+            m_casttime = 1;
+        else if (player->GetCommandStatus(CHEAT_CASTTIME)
+            || m_spellInfo->Effects[0].Effect == SPELL_EFFECT_ENCHANT_ITEM
+            || m_spellInfo->Effects[0].Effect == SPELL_EFFECT_APPLY_GLYPH
+            || player->HasAura(SPELL_PREPARATION)
+            || player->HasAura(SPELL_ARENA_PREPARATION)
+            || (m_CastItem && ((m_CastItem->GetTemplate()->Class == ITEM_CLASS_CONSUMABLE) && (m_CastItem->GetTemplate()->SubClass == ITEM_SUBCLASS_FOOD))))
+            m_casttime = 0;
+        else
         {
             player->SetSpellModTakingSpell(this, true);
             // calculate cast time (calculated after first CheckCast check to prevent charge counting for first CheckCast fail)
             m_casttime = m_spellInfo->CalcCastTime(this);
             player->SetSpellModTakingSpell(this, false);
         }
-        else
-            m_casttime = 0; // Set cast time to 0 if .cheat casttime is enabled.
     }
     else
         m_casttime = m_spellInfo->CalcCastTime(this);
