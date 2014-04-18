@@ -7639,6 +7639,7 @@ void Player::UpdateZone(uint32 newZone, uint32 newArea)
         case 3358: // arathi
         case 3698: // nagrand
         case 3702: // tranchantes
+        case 3817: // test
         case 3968: // lordearon
             break;
         case 8: // Swamp of sorrow
