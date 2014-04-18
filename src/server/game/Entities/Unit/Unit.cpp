@@ -4454,7 +4454,7 @@ bool Unit::HasNegativeAuraWithAttribute(uint32 flag, uint64 guid) const
     return false;
 }
 
-bool Unit::HasNegativeAuraWithAttributeEX(uint32 flag, uint64 guid) const
+bool Unit::HasNegativeAuraWithAttributeEx(uint32 flag, uint64 guid) const
 {
     for (AuraApplicationMap::const_iterator iter = m_appliedAuras.begin(); iter != m_appliedAuras.end(); ++iter)
     {
