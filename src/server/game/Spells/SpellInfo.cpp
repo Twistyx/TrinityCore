@@ -1909,6 +1909,20 @@ SpellSpecificType SpellInfo::GetSpellSpecific() const
             // scrolls effects
             else
             {
+                for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
+                {
+                    if (!Effects[i].TriggerSpell)
+                        continue;
+                    switch (Effects[i].TriggerSpell)
+                    {
+                        case 11008:
+                        case 11009:
+                        case 43961:
+                            return SPELL_SPECIFIC_FOOD_AND_DRINK;
+                        default:
+                            break;
+                    }
+                }
                 SpellInfo const* firstRankSpellInfo = GetFirstRankSpell();
                 switch (firstRankSpellInfo->Id)
                 {
