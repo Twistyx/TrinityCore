@@ -1802,6 +1802,14 @@ GroupJoinBattlegroundResult Group::CanJoinBattlegroundQueue(Battleground const* 
         // don't let join rated matches if the arena team id doesn't match
         if (isRated && member->GetArenaTeamId(arenaSlot) != arenaTeamId)
             return ERR_BATTLEGROUND_JOIN_FAILED;
+        if (member->IsBeingTeleported())
+            return ERR_BATTLEGROUND_JOIN_FAILED;
+        //if (member->IsFalling())
+        //    return ERR_BATTLEGROUND_JOIN_FAILED;
+        if (member->isSpectator())
+            return ERR_BATTLEGROUND_JOIN_FAILED;
+        if (member->isBeingLoaded())
+            return ERR_BATTLEGROUND_JOIN_FAILED;
         // don't let join if someone from the group is already in that bg queue
         if (member->InBattlegroundQueueForBattlegroundQueueType(bgQueueTypeId))
             return ERR_BATTLEGROUND_JOIN_FAILED;            // not blizz-like
