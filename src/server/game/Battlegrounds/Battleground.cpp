@@ -697,43 +697,56 @@ void Battleground::YellToAll(Creature* creature, char const* text, uint32 langua
         }
 }
 
-void Battleground::RewardTokenToAll(const uint32 token1, const uint32 token2, const uint32 winner, const uint32 quest)
+void Battleground::RewardTokenToAll(const uint32 /*token1*/, const uint32 /*token2*/, const uint32 /*winner*/, const uint32 /*quest*/)
 {
     uint32 count = 1;
 
     for (BattlegroundPlayerMap::const_iterator itr = m_Players.begin(); itr != m_Players.end(); ++itr)
     {
-        if (Player* player = _GetPlayer(itr, "RewardTokenToBG"))
+        if (Player* player = _GetPlayer(itr, "RewardTokenToAll"))
         {
-            if (!quest)
-            {
-                if (winner == 666)
-                    count = 2;
-                else if ((winner == HORDE) || (winner == ALLIANCE))
-                {
-                    uint32 team = itr->second.Team;
-                    if (!team)
-                        team = player->GetTeam();
-                    if (team == winner)
-                        count = 3;
-                }
-                if (token1)
-                    player->AddItem(token1, count);
-                if (token2)
-                    player->AddItem(token2, count);
-            }
+            if (player->HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_NO_XP_GAIN))
+                continue;
+
+            if (player->getLevel() == 19)
+                continue;
+
+            if (player->getLevel() < 13)
+                player->AddItem(52000, count);
+            else if (player->getLevel() > 15)
+                player->AddItem(52002, count);
             else
-            {
-                if (player->GetQuestStatus(quest) == QUEST_STATUS_INCOMPLETE)
-                {
-                    if (token1)
-                    {
-                        player->AddItem(token1, count);
-                    }
-                    if (token2)
-                        player->AddItem(token2, count);
-                }
-            }
+                player->AddItem(51999, count);
+
+            //if (!quest)
+            //{
+            //    if (winner == 666)
+            //        count = 2;
+            //    else if ((winner == HORDE) || (winner == ALLIANCE))
+            //    {
+            //        uint32 team = itr->second.Team;
+            //        if (!team)
+            //            team = player->GetTeam();
+            //        if (team == winner)
+            //            count = 3;
+            //    }
+            //    if (token1)
+            //        player->AddItem(token1, count);
+            //    if (token2)
+            //        player->AddItem(token2, count);
+            //}
+            //else
+            //{
+            //    if (player->GetQuestStatus(quest) == QUEST_STATUS_INCOMPLETE)
+            //    {
+            //        if (token1)
+            //        {
+            //            player->AddItem(token1, count);
+            //        }
+            //        if (token2)
+            //            player->AddItem(token2, count);
+            //    }
+            //}
         }
     }
 }
@@ -741,8 +754,13 @@ void Battleground::RewardTokenToAll(const uint32 token1, const uint32 token2, co
 void Battleground::RewardHonorToTeam(uint32 Honor, uint32 TeamID)
 {
     for (BattlegroundPlayerMap::const_iterator itr = m_Players.begin(); itr != m_Players.end(); ++itr)
+    {
         if (Player* player = _GetPlayerForTeam(TeamID, itr, "RewardHonorToTeam"))
+        {
+            player->GiveXP(Honor * 5, NULL);
             UpdatePlayerScore(player, SCORE_BONUS_HONOR, Honor);
+        }
+    }
 }
 
 void Battleground::RewardReputationToTeam(uint32 a_faction_id, uint32 h_faction_id, uint32 Reputation, uint32 teamId)
@@ -829,14 +847,12 @@ void Battleground::EndBattleground(uint32 winner)
     SetStatus(STATUS_WAIT_LEAVE);
     //we must set it this way, because end time is sent in packet!
     m_EndTime = TIME_TO_AUTOREMOVE;
-    if (isArena())
-        RewardTokenToAll(20880, 0, 0, 50002);
+
     // arena rating calculation
     if (isArena() && isRated())
     {
         winnerArenaTeam = sArenaTeamMgr->GetArenaTeamById(GetArenaTeamIdForTeam(winner));
         loserArenaTeam = sArenaTeamMgr->GetArenaTeamById(GetArenaTeamIdForTeam(GetOtherTeam(winner)));
-        //RewardTokenToAll(20880, 0, 0, 50002);
 
         if (winnerArenaTeam && loserArenaTeam && winnerArenaTeam != loserArenaTeam)
         {

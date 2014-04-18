@@ -124,6 +124,7 @@ void BattlegroundAB::PostUpdateImpl(uint32 diff)
                 if (m_ReputationScoreTics[team] >= m_ReputationTics)
                 {
                     RewardReputationToTeam(509, 510, 10, team == ALLIANCE ? ALLIANCE : HORDE);
+                    RewardHonorToTeam(30, (team == TEAM_ALLIANCE) ? ALLIANCE : HORDE);
                     m_ReputationScoreTics[team] -= m_ReputationTics;
                 }
 
@@ -628,6 +629,7 @@ void BattlegroundAB::Reset()
 
 void BattlegroundAB::EndBattleground(uint32 winner)
 {
+    RewardTokenToAll(0, 0, 0, 0);
     // Win reward
     if (winner == ALLIANCE)
         RewardHonorToTeam(GetBonusHonorFromKill(1), ALLIANCE);
