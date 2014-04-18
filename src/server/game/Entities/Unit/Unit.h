@@ -1774,6 +1774,7 @@ class Unit : public WorldObject
         bool HasAuraTypeWithValue(AuraType auratype, int32 value) const;
         bool HasNegativeAuraWithInterruptFlag(uint32 flag, uint64 guid = 0) const;
         bool HasNegativeAuraWithAttribute(uint32 flag, uint64 guid = 0) const;
+        bool HasNegativeAuraWithAttributeEx(uint32 flag, uint64 guid = 0) const;
         bool HasAuraWithMechanic(uint32 mechanicMask) const;
 
         AuraEffect* IsScriptOverriden(SpellInfo const* spell, int32 script) const;

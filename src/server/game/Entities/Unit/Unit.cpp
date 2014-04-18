@@ -348,7 +348,7 @@ void Unit::Update(uint32 p_time)
         // Check UNIT_STATE_MELEE_ATTACKING or UNIT_STATE_CHASE (without UNIT_STATE_FOLLOW in this case) so pets can reach far away
         // targets without stopping half way there and running off.
         // These flags are reset after target dies or another command is given.
-        if (m_HostileRefManager.isEmpty())
+        if (m_HostileRefManager.isEmpty() && !GetCurrentSpell(CURRENT_CHANNELED_SPELL) && !HasNegativeAuraWithAttributeEx(SPELL_ATTR1_CHANNELED_1 | SPELL_ATTR1_CHANNELED_2))
         {
             // m_CombatTimer set at aura start and it will be freeze until aura removing
             if (m_CombatTimer <= p_time)
@@ -4449,6 +4449,17 @@ bool Unit::HasNegativeAuraWithAttribute(uint32 flag, uint64 guid) const
     {
         Aura const* aura = iter->second->GetBase();
         if (!iter->second->IsPositive() && aura->GetSpellInfo()->Attributes & flag && (!guid || aura->GetCasterGUID() == guid))
+            return true;
+    }
+    return false;
+}
+
+bool Unit::HasNegativeAuraWithAttributeEX(uint32 flag, uint64 guid) const
+{
+    for (AuraApplicationMap::const_iterator iter = m_appliedAuras.begin(); iter != m_appliedAuras.end(); ++iter)
+    {
+        Aura const* aura = iter->second->GetBase();
+        if (!iter->second->IsPositive() && aura->GetSpellInfo()->AttributesEx & flag && (!guid || aura->GetCasterGUID() == guid))
             return true;
     }
     return false;
