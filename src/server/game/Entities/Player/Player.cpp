@@ -7612,14 +7612,15 @@ void Player::UpdateArea(uint32 newArea)
     m_areaUpdateId    = newArea;
 
     AreaTableEntry const* area = GetAreaEntryByAreaID(newArea);
-    pvpInfo.IsInFFAPvPArea = area && ((area->flags & AREA_FLAG_ARENA) || (GetAreaId() == 360));
-    UpdatePvPState(true);
+    pvpInfo.IsInFFAPvPArea = area && (area->flags & AREA_FLAG_ARENA);
 
     UpdateAreaDependentAuras(newArea);
 
     // previously this was in UpdateZone (but after UpdateArea) so nothing will break
     pvpInfo.IsInNoPvPArea = false;
-    if ((area && area->IsSanctuary()) || GetAreaId() == 1640)   // in sanctuary
+    if (newArea == 35)
+        CombatStopWithPets();
+    else if (area && area->IsSanctuary())   // in sanctuary
     {
         SetByteFlag(UNIT_FIELD_BYTES_2, 1, UNIT_BYTE2_FLAG_SANCTUARY);
         pvpInfo.IsInNoPvPArea = true;
@@ -7627,6 +7628,7 @@ void Player::UpdateArea(uint32 newArea)
     }
     else
         RemoveByteFlag(UNIT_FIELD_BYTES_2, 1, UNIT_BYTE2_FLAG_SANCTUARY);
+    UpdatePvPState(true);
 }
 
 void Player::UpdateZone(uint32 newZone, uint32 newArea)
@@ -7719,14 +7721,11 @@ void Player::UpdateZone(uint32 newZone, uint32 newArea)
     // Treat players having a quest flagging for PvP as always in hostile area
     pvpInfo.IsHostile = pvpInfo.IsInHostileArea || HasPvPForcingQuest();
 
-    if (zone->flags & AREA_FLAG_CAPITAL)                     // Is in a capital city
+    if (newArea == 35)                     // Is in a capital city
     {
-        if (!pvpInfo.IsHostile || zone->IsSanctuary())
-        {
-            SetFlag(PLAYER_FLAGS, PLAYER_FLAGS_RESTING);
-            SetRestType(REST_TYPE_IN_CITY);
-            InnEnter(time(0), GetMapId(), 0, 0, 0);
-        }
+        SetFlag(PLAYER_FLAGS, PLAYER_FLAGS_RESTING);
+        SetRestType(REST_TYPE_IN_CITY);
+        InnEnter(time(0), GetMapId(), 0, 0, 0);
         pvpInfo.IsInNoPvPArea = true;
     }
     else
@@ -20294,6 +20293,11 @@ void Player::ResetContestedPvP()
 
 void Player::UpdatePvPFlag(time_t currTime)
 {
+    if (GetAreaId() == 35)
+    {
+        UpdatePvP(false);
+        return;
+    }
     if (getLevel() == 19 || HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_NO_XP_GAIN))
     {
         UpdatePvP(true);
@@ -21796,7 +21800,7 @@ void Player::UpdatePvPState(bool onlyFFA)
     if (onlyFFA)
         return;
 
-    if (pvpInfo.IsHostile)                               // in hostile area
+    if (pvpInfo.IsHostile && (GetAreaId() != 35))                               // in hostile area
     {
         if ((getLevel() == 19) || HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_NO_XP_GAIN) || !IsPvP() || pvpInfo.EndTimer)
             UpdatePvP(true, true);
@@ -21810,7 +21814,9 @@ void Player::UpdatePvPState(bool onlyFFA)
 
 void Player::SetPvP(bool state)
 {
-    if ((getLevel() == 19) || HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_NO_XP_GAIN))
+    if (GetAreaId() == 35)
+        state = false;
+    else if ((getLevel() == 19) || HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_NO_XP_GAIN))
         state = true;
     Unit::SetPvP(state);
     for (ControlList::iterator itr = m_Controlled.begin(); itr != m_Controlled.end(); ++itr)
@@ -21820,15 +21826,10 @@ void Player::SetPvP(bool state)
 void Player::UpdatePvP(bool state, bool override)
 {
     if (!state || override)
-    {
-        SetPvP(state);
         pvpInfo.EndTimer = 0;
-    }
     else
-    {
         pvpInfo.EndTimer = time(NULL);
-        SetPvP(state);
-    }
+    SetPvP(state);
 }
 
 bool Player::HasSpellCooldown(uint32 spell_id) const
