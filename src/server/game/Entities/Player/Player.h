@@ -135,7 +135,7 @@ struct SpellCooldown
     uint16 itemid;
 };
 
-typedef std::map<uint32, SpellCooldown> SpellCooldowns;
+typedef std::map<int32, SpellCooldown> SpellCooldowns;
 typedef UNORDERED_MAP<uint32 /*instanceId*/, time_t/*releaseTime*/> InstanceTimeMap;
 
 enum TrainerSpellState
@@ -1665,15 +1665,15 @@ class Player : public Unit, public GridObject<Player>
 
         static uint32 const infinityCooldownDelay = MONTH;  // used for set "infinity cooldowns" for spells and check
         static uint32 const infinityCooldownDelayCheck = MONTH/2;
-        bool HasSpellCooldown(uint32 spell_id) const;
+        bool HasSpellCooldown(int32 spell_id) const;
         uint32 GetSpellCooldownDelay(uint32 spell_id) const;
         void AddSpellAndCategoryCooldowns(SpellInfo const* spellInfo, uint32 itemId, Spell* spell = NULL, bool infinityCooldown = false);
-        void AddSpellCooldown(uint32 spell_id, uint32 itemid, time_t end_time);
+        void AddSpellCooldown(int32 spell_id, uint32 itemid, time_t end_time);
         void SendCooldownEvent(SpellInfo const* spellInfo, uint32 itemId = 0, Spell* spell = NULL, bool setCooldown = true);
         void ProhibitSpellSchool(SpellSchoolMask idSchoolMask, uint32 unTimeMs);
-        void RemoveSpellCooldown(uint32 spell_id, bool update = false);
+        void RemoveSpellCooldown(int32 spell_id, bool update = false);
         void RemoveSpellCategoryCooldown(uint32 cat, bool update = false);
-        void SendClearCooldown(uint32 spell_id, Unit* target);
+        void SendClearCooldown(int32 spell_id, Unit* target);
 
         GlobalCooldownMgr& GetGlobalCooldownMgr() { return m_GlobalCooldownMgr; }
 

@@ -4779,8 +4779,22 @@ SpellCastResult Spell::CheckCast(bool strict)
         //can cast triggered (by aura only?) spells while have this flag
         if (!(_triggeredCastFlags & TRIGGERED_IGNORE_CASTER_AURASTATE) && m_caster->ToPlayer()->HasFlag(PLAYER_FLAGS, PLAYER_ALLOW_ONLY_ABILITY))
             return SPELL_FAILED_SPELL_IN_PROGRESS;
-
-        if (m_caster->ToPlayer()->HasSpellCooldown(m_spellInfo->Id))
+        int32 catOrSpell = m_spellInfo->Id;
+        if (m_CastItem)
+        {
+            if (ItemTemplate const* proto = m_CastItem->GetTemplate())
+            {
+                for (uint8 idx = 0; idx < MAX_ITEM_SPELLS; ++idx)
+                {
+                    if (uint32(proto->Spells[idx].SpellId) == m_spellInfo->Id)
+                    {
+                        catOrSpell = -proto->Spells[idx].SpellCategory;
+                        break;
+                    }
+                }
+            }
+        }
+        if (m_caster->ToPlayer()->HasSpellCooldown(catOrSpell))
         {
             if (m_triggeredByAuraSpell)
                 return SPELL_FAILED_DONT_REPORT;
