@@ -4376,7 +4376,7 @@ bool Player::Has310Flyer(bool checkAllSpells, uint32 excludeSpellId)
     return false;
 }
 
-void Player::RemoveSpellCooldown(uint32 spell_id, bool update /* = false */)
+void Player::RemoveSpellCooldown(int32 spell_id, bool update /* = false */)
 {
     m_spellCooldowns.erase(spell_id);
 
@@ -4389,8 +4389,7 @@ void Player::RemoveCategoryCooldown(uint32 cat)
 {
     SpellCategoryStore::const_iterator i_scstore = sSpellCategoryStore.find(cat);
     if (i_scstore != sSpellCategoryStore.end())
-        for (SpellCategorySet::const_iterator i_scset = i_scstore->second.begin(); i_scset != i_scstore->second.end(); ++i_scset)
-            RemoveSpellCooldown(*i_scset, true);
+        RemoveSpellCooldown(-cat, true);
 }
 
 void Player::RemoveSpellCategoryCooldown(uint32 cat, bool update /* = false */)
@@ -4398,15 +4397,7 @@ void Player::RemoveSpellCategoryCooldown(uint32 cat, bool update /* = false */)
     SpellCategoryStore::const_iterator ct = sSpellCategoryStore.find(cat);
     if (ct == sSpellCategoryStore.end())
         return;
-
-    const SpellCategorySet& ct_set = ct->second;
-    for (SpellCooldowns::const_iterator i = m_spellCooldowns.begin(); i != m_spellCooldowns.end();)
-    {
-        if (ct_set.find(i->first) != ct_set.end())
-            RemoveSpellCooldown((i++)->first, update);
-        else
-            ++i;
-    }
+    RemoveSpellCooldown(-cat, update);
 }
 
 void Player::RemoveArenaSpellCooldowns(bool removeActivePetCooldowns)
@@ -4466,11 +4457,11 @@ void Player::_LoadSpellCooldowns(PreparedQueryResult result)
         do
         {
             Field* fields = result->Fetch();
-            uint32 spell_id = fields[0].GetUInt32();
+            int32 spell_id = fields[0].GetInt32();
             uint32 item_id  = fields[1].GetUInt32();
             time_t db_time  = time_t(fields[2].GetUInt32());
 
-            if (!sSpellMgr->GetSpellInfo(spell_id))
+            if ((spell_id > 0) && !sSpellMgr->GetSpellInfo(spell_id))
             {
                 TC_LOG_ERROR(LOG_FILTER_PLAYER_LOADING, "Player %u has unknown spell %u in `character_spell_cooldown`, skipping.", GetGUIDLow(), spell_id);
                 continue;
@@ -21847,7 +21838,7 @@ void Player::UpdatePvP(bool state, bool override)
     }
 }
 
-bool Player::HasSpellCooldown(uint32 spell_id) const
+bool Player::HasSpellCooldown(int32 spell_id) const
 {
     SpellCooldowns::const_iterator itr = m_spellCooldowns.find(spell_id);
     return itr != m_spellCooldowns.end() && itr->second.end > time(NULL);
@@ -21945,18 +21936,22 @@ void Player::AddSpellAndCategoryCooldowns(SpellInfo const* spellInfo, uint32 ite
         SpellCategoryStore::const_iterator i_scstore = sSpellCategoryStore.find(cat);
         if (i_scstore != sSpellCategoryStore.end())
         {
-            for (SpellCategorySet::const_iterator i_scset = i_scstore->second.begin(); i_scset != i_scstore->second.end(); ++i_scset)
+            AddSpellCooldown(-cat, itemId, catrecTime);
+            if (!itemId)
             {
-                if (*i_scset == spellInfo->Id)                    // skip main spell, already handled above
-                    continue;
+                for (SpellCategorySet::const_iterator i_scset = i_scstore->second.begin(); i_scset != i_scstore->second.end(); ++i_scset)
+                {
+                    if (*i_scset == spellInfo->Id)                    // skip main spell, already handled above
+                        continue;
 
-                AddSpellCooldown(*i_scset, itemId, catrecTime);
+                    AddSpellCooldown(*i_scset, itemId, catrecTime);
+                }
             }
         }
     }
 }
 
-void Player::AddSpellCooldown(uint32 spellid, uint32 itemid, time_t end_time)
+void Player::AddSpellCooldown(int32 spellid, uint32 itemid, time_t end_time)
 {
     SpellCooldown sc;
     sc.end = end_time;
@@ -25813,10 +25808,10 @@ void Player::RemoveAtLoginFlag(AtLoginFlags flags, bool persist /*= false*/)
     }
 }
 
-void Player::SendClearCooldown(uint32 spell_id, Unit* target)
+void Player::SendClearCooldown(int32 spell_id, Unit* target)
 {
     WorldPacket data(SMSG_CLEAR_COOLDOWN, 4+8);
-    data << uint32(spell_id);
+    data << int32(spell_id);
     data << uint64(target->GetGUID());
     SendDirectMessage(&data);
 }
