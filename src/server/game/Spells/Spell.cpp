@@ -3209,12 +3209,13 @@ void Spell::cast(bool skipCheck)
             if (Pet* playerPet = playerCaster->GetPet())
                 if (playerPet->IsAlive() && playerPet->isControlled() && (m_targets.GetTargetMask() & TARGET_FLAG_UNIT))
                     playerPet->AI()->OwnerAttacked(m_targets.GetObjectTarget()->ToUnit());
+
+        if (m_spellInfo->Id == 2764 && !playerCaster->IsInCombat())
+            m_caster->SetInCombatState(true, NULL);
     }
 
     SetExecutedCurrently(true);
 
-    if (m_spellInfo->Id == 2764)
-        m_caster->SetInCombatState(true, NULL);
 
     if (!(_triggeredCastFlags & TRIGGERED_IGNORE_SET_FACING))
         if (m_caster->GetTypeId() == TYPEID_UNIT && m_targets.GetObjectTarget() && m_caster != m_targets.GetObjectTarget())
