@@ -494,6 +494,7 @@ enum PlayerExtraFlags
     PLAYER_EXTRA_GM_INVISIBLE       = 0x0010,
     PLAYER_EXTRA_GM_CHAT            = 0x0020,               // Show GM badge in chat messages
     PLAYER_EXTRA_HAS_310_FLYER      = 0x0040,               // Marks if player already has 310% speed flying mount
+    PLAYER_EXTRA_PIRATE             = 0x0080,               // Custom Pirate flag
 
     // other states
     PLAYER_EXTRA_PVP_DEATH          = 0x0100                // store PvP death status until corpse creating.
@@ -1092,7 +1093,7 @@ class Player : public Unit, public GridObject<Player>
         void MorphFit(bool value);
         bool IsPlayingNative() const { return GetTeam() == m_team; }
         uint32 GetOTeam() const { return m_team; }
-        uint32 GetTeam() const { return m_bgData.bgTeam && GetBattleground() ? m_bgData.bgTeam : m_team; }
+        uint32 GetTeam(bool skip = false) const;
         bool SendRealNameQuery();
         FakePlayers m_FakePlayers;
 
@@ -1157,6 +1158,7 @@ class Player : public Unit, public GridObject<Player>
         bool isAcceptWhispers() const { return m_ExtraFlags & PLAYER_EXTRA_ACCEPT_WHISPERS; }
         void SetAcceptWhispers(bool on) { if (on) m_ExtraFlags |= PLAYER_EXTRA_ACCEPT_WHISPERS; else m_ExtraFlags &= ~PLAYER_EXTRA_ACCEPT_WHISPERS; }
         bool IsGameMaster() const { return m_ExtraFlags & PLAYER_EXTRA_GM_ON; }
+        bool IsPirate() const { return (InBattleground()) ? false : m_ExtraFlags & PLAYER_EXTRA_PIRATE; }
         void SetGameMaster(bool on);
         bool isGMChat() const { return m_ExtraFlags & PLAYER_EXTRA_GM_CHAT; }
         void SetGMChat(bool on) { if (on) m_ExtraFlags |= PLAYER_EXTRA_GM_CHAT; else m_ExtraFlags &= ~PLAYER_EXTRA_GM_CHAT; }
@@ -1175,6 +1177,7 @@ class Player : public Unit, public GridObject<Player>
         Unit* getSpectateFrom()   { return spectateFrom; }
         bool isSpectator() const  { return spectatorFlag; }
         void SetSpectate(bool on);
+        void SetPirate(bool on);
 
         void GiveXP(uint32 xp, Unit* victim, float group_rate=1.0f);
         void GiveLevel(uint8 level);
@@ -1923,7 +1926,7 @@ class Player : public Unit, public GridObject<Player>
         void CheckAreaExploreAndOutdoor(void);
 
         static uint32 TeamForRace(uint8 race);
-        TeamId GetTeamId() const { return GetTeam() == ALLIANCE ? TEAM_ALLIANCE : TEAM_HORDE; }
+        TeamId GetTeamId() const;
         void setFactionForRace(uint8 race);
 
         void InitDisplayIds();

@@ -957,7 +957,7 @@ bool GameObject::ActivateToQuest(Player* target) const
             if (LootTemplates_Gameobject.HaveQuestLootForPlayer(GetGOInfo()->GetLootId(), target))
             {
                 if (Battleground const* bg = target->GetBattleground())
-                    return bg->CanActivateGO(GetEntry(), target->GetTeam());
+                    return bg->CanActivateGO(GetEntry(), target->GetOTeam());
                 return true;
             }
             break;

@@ -2869,7 +2869,7 @@ void Player::SetSpectate(bool on)
         SetPhaseMask(newPhase, false);
 
         m_ExtraFlags &= ~ PLAYER_EXTRA_GM_ON;
-        setFactionForRace(getRace());
+        setFactionForRace(getORace());
         RemoveFlag(PLAYER_FLAGS, PLAYER_FLAGS_GM);
         RemoveFlag(UNIT_FIELD_FLAGS_2, UNIT_FLAG2_ALLOW_CHEAT_SPELLS);
 
@@ -5641,6 +5641,8 @@ void Player::RepopAtGraveyard()
     {
         if (Battlefield* bf = sBattlefieldMgr->GetBattlefieldToZoneId(zoneId))
             ClosestGrave = bf->GetClosestGraveYard(this);
+        else if (GetTeam() == PIRATE)
+            ClosestGrave = sObjectMgr->GetClosestGraveYard(GetPositionX(), GetPositionY(), GetPositionZ(), GetMapId(), HORDE);
         else
             ClosestGrave = sObjectMgr->GetClosestGraveYard(GetPositionX(), GetPositionY(), GetPositionZ(), GetMapId(), GetTeam());
     }
@@ -5975,6 +5977,7 @@ float Player::GetSpellCritFromIntellect()
 
 float Player::GetRatingMultiplier(CombatRating cr) const
 {
+
     uint8 level = getLevel();
 
     if (level > GT_MAX_LEVEL)
@@ -7035,10 +7038,14 @@ uint32 Player::TeamForRace(uint8 race)
 
 void Player::setFactionForRace(uint8 race)
 {
+    if (GetReputationRank(87) >= REP_FRIENDLY)
+        SetPirate(true);
+    else
+    {
+        ChrRacesEntry const* rEntry = sChrRacesStore.LookupEntry(race);
+        setFaction(rEntry ? rEntry->FactionID : getFaction());
+    }
     SetBGTeam(TeamForRace(race));
-
-    ChrRacesEntry const* rEntry = sChrRacesStore.LookupEntry(race);
-    setFaction(rEntry ? rEntry->FactionID : getFaction());
 }
 
 ReputationRank Player::GetReputationRank(uint32 faction) const
@@ -7609,8 +7616,11 @@ void Player::UpdateArea(uint32 newArea)
 
     // previously this was in UpdateZone (but after UpdateArea) so nothing will break
     pvpInfo.IsInNoPvPArea = false;
-    if (newArea == 35)
+    if (newArea == 35 && !IsPirate())
+    {
+        SetUInt32Value(PLAYER_DUEL_TEAM, 2);
         CombatStopWithPets();
+    }
     else if (area && area->IsSanctuary())   // in sanctuary
     {
         SetByteFlag(UNIT_FIELD_BYTES_2, 1, UNIT_BYTE2_FLAG_SANCTUARY);
@@ -7692,32 +7702,38 @@ void Player::UpdateZone(uint32 newZone, uint32 newArea)
 
     // in PvP, any not controlled zone (except zone->team == 6, default case)
     // in PvE, only opposition team capital
-    switch (zone->team)
+    if (IsPirate())
+        pvpInfo.IsInHostileArea = true;
+    else
     {
-        case AREATEAM_ALLY:
-            pvpInfo.IsInHostileArea = GetTeam() != ALLIANCE && (sWorld->IsPvPRealm() || zone->flags & AREA_FLAG_CAPITAL);
-            break;
-        case AREATEAM_HORDE:
-            pvpInfo.IsInHostileArea = GetTeam() != HORDE && (sWorld->IsPvPRealm() || zone->flags & AREA_FLAG_CAPITAL);
-            break;
-        case AREATEAM_NONE:
-            // overwrite for battlegrounds, maybe batter some zone flags but current known not 100% fit to this
-            pvpInfo.IsInHostileArea = sWorld->IsPvPRealm() || InBattleground() || zone->flags & AREA_FLAG_WINTERGRASP;
-            break;
-        default:                                            // 6 in fact
-            pvpInfo.IsInHostileArea = false;
-            break;
+        switch (zone->team)
+        {
+            case AREATEAM_ALLY:
+                pvpInfo.IsInHostileArea = GetTeam() != ALLIANCE && (sWorld->IsPvPRealm() || zone->flags & AREA_FLAG_CAPITAL);
+                break;
+            case AREATEAM_HORDE:
+                pvpInfo.IsInHostileArea = GetTeam() != HORDE && (sWorld->IsPvPRealm() || zone->flags & AREA_FLAG_CAPITAL);
+                break;
+            case AREATEAM_NONE:
+                // overwrite for battlegrounds, maybe batter some zone flags but current known not 100% fit to this
+                pvpInfo.IsInHostileArea = sWorld->IsPvPRealm() || InBattleground() || zone->flags & AREA_FLAG_WINTERGRASP;
+                break;
+            default:                                            // 6 in fact
+                pvpInfo.IsInHostileArea = false;
+                break;
+        }
     }
 
     // Treat players having a quest flagging for PvP as always in hostile area
     pvpInfo.IsHostile = pvpInfo.IsInHostileArea || HasPvPForcingQuest();
 
-    if (newArea == 35)                     // Is in a capital city
+    if (newArea == 35 && !IsPirate())                     // Is in a capital city
     {
+        SetUInt32Value(PLAYER_DUEL_TEAM, 2);
         SetFlag(PLAYER_FLAGS, PLAYER_FLAGS_RESTING);
         SetRestType(REST_TYPE_IN_CITY);
         InnEnter(time(0), GetMapId(), 0, 0, 0);
-        pvpInfo.IsInNoPvPArea = true;
+        //pvpInfo.IsInNoPvPArea = true;
     }
     else
     {
@@ -7904,9 +7920,15 @@ void Player::DuelComplete(DuelCompleteType type)
 
     //cleanups
     SetUInt64Value(PLAYER_DUEL_ARBITER, 0);
-    SetUInt32Value(PLAYER_DUEL_TEAM, 0);
+    if (GetAreaId() == 35 && !IsPirate())
+        SetUInt32Value(PLAYER_DUEL_TEAM, 2);
+    else
+        SetUInt32Value(PLAYER_DUEL_TEAM, 0);
     duel->opponent->SetUInt64Value(PLAYER_DUEL_ARBITER, 0);
-    duel->opponent->SetUInt32Value(PLAYER_DUEL_TEAM, 0);
+    if (duel->opponent->GetAreaId() == 35 && !duel->opponent->IsPirate())
+        duel->opponent->SetUInt32Value(PLAYER_DUEL_TEAM, 2);
+    else
+        duel->opponent->SetUInt32Value(PLAYER_DUEL_TEAM, 0);
 
     delete duel->opponent->duel;
     duel->opponent->duel = NULL;
@@ -17567,10 +17589,6 @@ bool Player::LoadFromDB(uint32 guid, SQLQueryHolder *holder)
     // make sure the unit is considered out of combat for proper loading
     ClearInCombat();
 
-    // make sure the unit is considered not in duel for proper loading
-    SetUInt64Value(PLAYER_DUEL_ARBITER, 0);
-    SetUInt32Value(PLAYER_DUEL_TEAM, 0);
-
     // reset stats before loading any modifiers
     InitStatsForLevel();
     InitGlyphsForLevel();
@@ -17747,6 +17765,14 @@ bool Player::LoadFromDB(uint32 guid, SQLQueryHolder *holder)
     m_achievementMgr->CheckAllAchievementCriteria();
 
     _LoadEquipmentSets(holder->GetPreparedResult(PLAYER_LOGIN_QUERY_LOAD_EQUIPMENT_SETS));
+
+
+    // make sure the unit is considered not in duel for proper loading
+    SetUInt64Value(PLAYER_DUEL_ARBITER, 0);
+    if (map->GetAreaId(GetPositionX(), GetPositionY(), GetPositionZ()) == 35 && !IsPirate())
+        SetUInt32Value(PLAYER_DUEL_TEAM, 2);
+    else
+        SetUInt32Value(PLAYER_DUEL_TEAM, 0);
 
     return true;
 }
@@ -18948,9 +18974,9 @@ bool Player::Satisfy(AccessRequirement const* ar, uint32 target_map, bool report
         }
 
         uint32 missingQuest = 0;
-        if (GetTeam() == ALLIANCE && ar->quest_A && !GetQuestRewardStatus(ar->quest_A))
+        if (GetOTeam() == ALLIANCE && ar->quest_A && !GetQuestRewardStatus(ar->quest_A))
             missingQuest = ar->quest_A;
-        else if (GetTeam() == HORDE && ar->quest_H && !GetQuestRewardStatus(ar->quest_H))
+        else if (GetOTeam() == HORDE && ar->quest_H && !GetQuestRewardStatus(ar->quest_H))
             missingQuest = ar->quest_H;
 
         uint32 missingAchievement = 0;
@@ -20284,11 +20310,6 @@ void Player::ResetContestedPvP()
 
 void Player::UpdatePvPFlag(time_t currTime)
 {
-    if (GetAreaId() == 35)
-    {
-        UpdatePvP(false);
-        return;
-    }
     if (getLevel() == 19 || HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_NO_XP_GAIN))
     {
         UpdatePvP(true);
@@ -21791,7 +21812,7 @@ void Player::UpdatePvPState(bool onlyFFA)
     if (onlyFFA)
         return;
 
-    if (pvpInfo.IsHostile && (GetAreaId() != 35))                               // in hostile area
+    if (pvpInfo.IsHostile || IsPirate())                               // in hostile area
     {
         if ((getLevel() == 19) || HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_NO_XP_GAIN) || !IsPvP() || pvpInfo.EndTimer)
             UpdatePvP(true, true);
@@ -21805,8 +21826,8 @@ void Player::UpdatePvPState(bool onlyFFA)
 
 void Player::SetPvP(bool state)
 {
-    if (GetAreaId() == 35)
-        state = false;
+    if (GetAreaId() == 35 && !IsPirate())
+        SetUInt32Value(PLAYER_DUEL_TEAM, 2);
     else if ((getLevel() == 19) || HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_NO_XP_GAIN))
         state = true;
     Unit::SetPvP(state);
@@ -22179,7 +22200,7 @@ void Player::SetBattlegroundEntryPoint()
         // If map is dungeon find linked graveyard
         if (GetMap()->IsDungeon())
         {
-            if (const WorldSafeLocsEntry* entry = sObjectMgr->GetClosestGraveYard(GetPositionX(), GetPositionY(), GetPositionZ(), GetMapId(), GetTeam()))
+            if (const WorldSafeLocsEntry* entry = sObjectMgr->GetClosestGraveYard(GetPositionX(), GetPositionY(), GetPositionZ(), GetMapId(), GetOTeam()))
                 m_bgData.joinPos = WorldLocation(entry->map_id, entry->x, entry->y, entry->z, 0.0f);
             else
                 TC_LOG_ERROR(LOG_FILTER_PLAYER, "SetBattlegroundEntryPoint: Dungeon map %u has no linked graveyard, setting home location as entry point.", GetMapId());
@@ -26709,3 +26730,59 @@ Pet* Player::SummonPet(uint32 entry, float x, float y, float z, float ang, PetTy
         Tauren (Female) - 20584
         Blood Elf (Female) - 20322
     */
+
+uint32 Player::GetTeam(bool skip /*= false*/) const
+{
+    if (m_bgData.bgTeam && GetBattleground())
+        return m_bgData.bgTeam;
+    else if (!skip && IsPirate())
+        return PIRATE;
+    return m_team;
+}
+
+TeamId Player::GetTeamId() const
+{
+    switch (GetTeam())
+    {
+        case ALLIANCE:
+            return TEAM_ALLIANCE;
+        case HORDE:
+            return TEAM_HORDE;
+        case PIRATE:
+            return TEAM_PIRATE;
+        default:
+            return TEAM_NEUTRAL;
+    }
+}
+
+void Player::SetPirate(bool on)
+{
+    if (on)
+    {
+        if (IsPirate())
+            return;
+        if (GetAreaId() == 35)
+            SetUInt32Value(PLAYER_DUEL_TEAM, 0);
+        m_ExtraFlags |= PLAYER_EXTRA_PIRATE;
+        setFaction(87);
+
+        if (Pet* pet = GetPet())
+            pet->setFaction(87);
+    }
+    else
+    {
+        if (!IsPirate())
+            return;
+        if (GetAreaId() == 35)
+            SetUInt32Value(PLAYER_DUEL_TEAM, 2);
+        m_ExtraFlags &= ~ PLAYER_EXTRA_PIRATE;
+        setFactionForRace(getORace());
+
+        if (Pet* pet = GetPet())
+            pet->setFaction(getFaction());
+    }
+    if (Group* group = GetGroup())
+        group->RemoveMember(GetGUID());
+    UpdatePvPState();
+    CombatStopWithPets();
+}

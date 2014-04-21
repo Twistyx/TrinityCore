@@ -643,13 +643,15 @@ enum TeamId
 {
     TEAM_ALLIANCE = 0,
     TEAM_HORDE,
-    TEAM_NEUTRAL
+    TEAM_NEUTRAL,
+    TEAM_PIRATE
 };
 
 enum Team
 {
     HORDE               = 67,
     ALLIANCE            = 469,
+    PIRATE              = 119,
     //TEAM_STEAMWHEEDLE_CARTEL = 169,                       // not used in code
     //TEAM_ALLIANCE_FORCES     = 891,
     //TEAM_HORDE_FORCES        = 892,

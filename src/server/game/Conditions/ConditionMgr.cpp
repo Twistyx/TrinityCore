@@ -91,7 +91,7 @@ bool Condition::Meets(ConditionSourceInfo& sourceInfo)
         case CONDITION_TEAM:
         {
             if (Player* player = object->ToPlayer())
-                condMeets = player->GetTeam() == ConditionValue1;
+                condMeets = player->GetOTeam() == ConditionValue1;
             break;
         }
         case CONDITION_CLASS:

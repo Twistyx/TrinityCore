@@ -8865,6 +8865,16 @@ ReputationRank Unit::GetReactionTo(Unit const* target) const
             }
         }
     }
+    else
+    {
+        Player const* selfPlayerOwner = GetAffectingPlayer();
+        Player const* targetPlayerOwner = target->GetAffectingPlayer();
+        if (selfPlayerOwner && targetPlayerOwner)
+        {
+            if (selfPlayerOwner->IsPirate() && !targetPlayerOwner->IsPirate())
+                return REP_HOSTILE;
+        }
+    }
     // do checks dependant only on our faction
     return GetFactionReactionTo(GetFactionTemplateEntry(), target);
 }
@@ -12006,6 +12016,7 @@ bool Unit::_IsValidAttackTarget(Unit const* target, SpellInfo const* bySpell, Wo
         if (playerAttacker->HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_UBER))
             return false;
     }
+
     // check flags
     if (target->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_TAXI_FLIGHT | UNIT_FLAG_NOT_ATTACKABLE_1 | UNIT_FLAG_UNK_16)
         || (!HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PVP_ATTACKABLE) && target->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IMMUNE_TO_NPC))
@@ -12014,20 +12025,21 @@ bool Unit::_IsValidAttackTarget(Unit const* target, SpellInfo const* bySpell, Wo
         // check if this is a world trigger cast - GOs are using world triggers to cast their spells, so we need to ignore their immunity flag here, this is a temp workaround, needs removal when go cast is implemented properly
         || (GetEntry() != WORLD_TRIGGER && target->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PVP_ATTACKABLE) && HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IMMUNE_TO_PC)))
         return false;
-
+    const ReputationRank victimReact = target->GetReactionTo(this);
+    const ReputationRank attackerReact = GetReactionTo(target);
     // CvC case - can attack each other only when one of them is hostile
     if (!HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PVP_ATTACKABLE) && !target->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PVP_ATTACKABLE))
-        return GetReactionTo(target) <= REP_HOSTILE || target->GetReactionTo(this) <= REP_HOSTILE;
+        return attackerReact <= REP_HOSTILE || victimReact <= REP_HOSTILE;
 
     // PvP, PvC, CvP case
     // can't attack friendly targets
-    if ( GetReactionTo(target) > REP_NEUTRAL
-        || target->GetReactionTo(this) > REP_NEUTRAL)
+    if ( attackerReact > REP_NEUTRAL
+        || victimReact > REP_NEUTRAL)
         return false;
 
     // Not all neutral creatures can be attacked
-    if (GetReactionTo(target) == REP_NEUTRAL &&
-        target->GetReactionTo(this) == REP_NEUTRAL)
+    if (attackerReact == REP_NEUTRAL &&
+        victimReact == REP_NEUTRAL)
     {
         if  (!(target->GetTypeId() == TYPEID_PLAYER && GetTypeId() == TYPEID_PLAYER) &&
             !(target->GetTypeId() == TYPEID_UNIT && GetTypeId() == TYPEID_UNIT))
@@ -15595,7 +15607,7 @@ void Unit::Kill(Unit* victim, bool durabilityLoss)
         if (GetTypeId() == TYPEID_UNIT)
             victim->ToPlayer()->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_KILLED_BY_CREATURE, GetEntry());
         else if (GetTypeId() == TYPEID_PLAYER && victim != this)
-            victim->ToPlayer()->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_KILLED_BY_PLAYER, 1, ToPlayer()->GetTeam());
+            victim->ToPlayer()->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_KILLED_BY_PLAYER, 1, ToPlayer()->GetOTeam());
     }
 
     // Hook for OnPVPKill Event

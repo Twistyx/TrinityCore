@@ -384,8 +384,17 @@ bool ReputationMgr::SetOneFactionReputation(FactionEntry const* factionEntry, in
         if (new_rank <= REP_HOSTILE)
             SetAtWar(&itr->second, true);
 
-        if (new_rank > old_rank)
-            _sendFactionIncreased = true;
+        if (new_rank != old_rank)
+        {
+            if (new_rank > old_rank)
+            {
+                if (factionEntry->ID == 87 && new_rank >= REP_FRIENDLY && !_player->IsPirate())
+                    _player->SetPirate(true);
+                _sendFactionIncreased = true;
+            }
+            else if (factionEntry->ID == 87 && new_rank < REP_FRIENDLY && _player->IsPirate())
+                _player->SetPirate(false);
+        }
 
         UpdateRankCounters(old_rank, new_rank);
 

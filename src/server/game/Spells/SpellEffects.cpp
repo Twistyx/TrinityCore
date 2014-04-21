@@ -1198,7 +1198,7 @@ void Spell::EffectTeleportUnits(SpellEffIndex /*effIndex*/)
                     case 5:
                     // Transform
                     {
-                        if (m_caster->ToPlayer()->GetTeam() == ALLIANCE)
+                        if (m_caster->ToPlayer()->GetOTeam() == ALLIANCE)
                             m_caster->CastSpell(m_caster, 36897, true);
                         else
                             m_caster->CastSpell(m_caster, 36899, true);
@@ -1239,7 +1239,7 @@ void Spell::EffectTeleportUnits(SpellEffIndex /*effIndex*/)
                     case 4:
                         // Transform
                     {
-                        if (m_caster->ToPlayer()->GetTeam() == ALLIANCE)
+                        if (m_caster->ToPlayer()->GetOTeam() == ALLIANCE)
                             m_caster->CastSpell(m_caster, 36897, true);
                         else
                             m_caster->CastSpell(m_caster, 36899, true);
@@ -4251,14 +4251,14 @@ void Spell::EffectDuel(SpellEffIndex effIndex)
 
     // Players can only fight a duel in zones with this flag
     AreaTableEntry const* casterAreaEntry = GetAreaEntryByAreaID(caster->GetAreaId());
-    if (casterAreaEntry && !(casterAreaEntry->flags & AREA_FLAG_ALLOW_DUELS))
+    if ((casterAreaEntry && !(casterAreaEntry->flags & AREA_FLAG_ALLOW_DUELS)) || (caster->GetAreaId() == 35))
     {
         SendCastResult(SPELL_FAILED_NO_DUELING);            // Dueling isn't allowed here
         return;
     }
 
     AreaTableEntry const* targetAreaEntry = GetAreaEntryByAreaID(target->GetAreaId());
-    if (targetAreaEntry && !(targetAreaEntry->flags & AREA_FLAG_ALLOW_DUELS))
+    if ((targetAreaEntry && !(targetAreaEntry->flags & AREA_FLAG_ALLOW_DUELS)) || (target->GetAreaId() == 35))
     {
         SendCastResult(SPELL_FAILED_NO_DUELING);            // Dueling isn't allowed here
         return;
