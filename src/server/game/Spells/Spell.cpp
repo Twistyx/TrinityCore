@@ -4765,6 +4765,60 @@ void Spell::HandleEffects(Unit* pUnitTarget, Item* pItemTarget, GameObject* pGOT
     {
         (this->*SpellEffects[eff])((SpellEffIndex)i);
     }
+    switch (m_spellInfo->Id)
+    {
+        case 467:
+        case 1126:
+        case 1243:
+        case 1460:
+        case 1459:
+        case 5232:
+        {
+            Unit *caster = GetCaster();
+            if (!caster) // Fail to get the caster
+                return;
+
+            Player *pCaster = caster->ToPlayer();
+            if (!pCaster) // Caster not a player
+                return;
+
+            if (!unitTarget) // Fail to get the target
+                return;
+
+            Group* group = pCaster->GetGroup();
+            if (!group) // caster not in a group
+                return;
+
+            if (!unitTarget->IsInRaidWith(pCaster))
+                return; // Target not in the group
+
+            for (GroupReference* itr = group->GetFirstMember(); itr != NULL; itr = itr->next())
+            {
+                Player* pTarget = itr->GetSource();
+                if (!pTarget || !pTarget->IsInRange(pCaster, 0.0f, 33.0f))
+                    continue;
+
+                if (!pTarget->HasAura(m_spellInfo->Id))
+                {
+                    switch (m_spellInfo->Id)
+                    {
+                        case 2947:
+                            break;
+                        default:
+                            pTarget->CastSpell(pTarget,27937, true);
+                            break;
+                    }
+                }
+                Pet* pet = pTarget->GetPet();
+                if (pet && pet->IsAlive())
+                    Aura::TryRefreshStackOrCreate(m_spellInfo, MAX_EFFECT_MASK, pet, pet);
+                Aura::TryRefreshStackOrCreate(m_spellInfo, MAX_EFFECT_MASK, pTarget, pTarget);
+            }
+            break;
+        }
+        default:
+            break;
+    }
 }
 
 SpellCastResult Spell::CheckCast(bool strict)
