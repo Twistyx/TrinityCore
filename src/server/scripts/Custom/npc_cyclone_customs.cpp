@@ -725,29 +725,55 @@ class npc_talent : public CreatureScript
 public:
     npc_talent() : CreatureScript("npc_talent"){ }
  
-    bool OnGossipHello(Player *player, Creature * m_creature)
+    bool OnGossipHello(Player* player, Creature* creature)
     {
-        player->ADD_GOSSIP_ITEM(4, "Reset my talents.", GOSSIP_SENDER_MAIN, 3);
-        player->ADD_GOSSIP_ITEM(GOSSIP_ICON_DOT, TXT_KTHXBY, GOSSIP_SENDER_MAIN, 1000);
-        player->SEND_GOSSIP_MENU(1, m_creature->GetGUID());
+        if (creature->IsQuestGiver())
+            player->PrepareQuestMenu(creature->GetGUID());
+        if (creature->IsTrainer())
+            player->ADD_GOSSIP_ITEM(GOSSIP_ICON_TRAINER, "Train me !", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_TRAIN);
+        if (player->GetSpecsCount() == 1)
+            player->ADD_GOSSIP_ITEM_EXTENDED(GOSSIP_ICON_TRAINER, "Learn Dual Spec", GOSSIP_SENDER_MAIN, GOSSIP_OPTION_LEARNDUALSPEC, "Are you sure you want to pay this much ?", 100000, false);
+        player->ADD_GOSSIP_ITEM(GOSSIP_ICON_TRAINER, "Reset my talents.", GOSSIP_SENDER_MAIN, GOSSIP_OPTION_UNLEARNTALENTS);
+        player->SEND_GOSSIP_MENU(1, creature->GetGUID());
         return true;
     }
  
-    bool OnGossipSelect(Player *player, Creature * m_creature, uint32 /*uiSender*/, uint32 uiAction)
+    bool OnGossipSelect(Player* player, Creature* creature, uint32 /*uiSender*/, uint32 action)
     {
-        (void)m_creature;
-        if(!player)
-            return true;
-
-        if (uiAction == 3)
+        player->PlayerTalkClass->ClearMenus();
+        switch (action)
         {
-            player->resetTalents(true);
-            player->SendTalentsInfoData(false);
-            ChatHandler(player->GetSession()).SendSysMessage(LANG_RESET_TALENTS);
-            return true;
+            case GOSSIP_ACTION_TRAIN:
+                player->GetSession()->SendTrainerList(creature->GetGUID());
+                break;
+            case GOSSIP_OPTION_UNLEARNTALENTS:
+                player->CLOSE_GOSSIP_MENU();
+                player->SendTalentWipeConfirm(creature->GetGUID());
+                break;
+            case GOSSIP_OPTION_LEARNDUALSPEC:
+                if (player->GetSpecsCount() == 1)
+                {
+                    if (!player->HasEnoughMoney(100000))
+                    {
+                        player->SendBuyError(BUY_ERR_NOT_ENOUGHT_MONEY, 0, 0, 0);
+                        player->PlayerTalkClass->SendCloseGossip();
+                        break;
+                    }
+                    else
+                    {
+                        player->ModifyMoney(-100000);
+
+                        // Cast spells that teach dual spec
+                        // Both are also ImplicitTarget self and must be cast by player
+                        player->CastSpell(player, 63680, true, NULL, NULL, player->GetGUID());
+                        player->CastSpell(player, 63624, true, NULL, NULL, player->GetGUID());
+
+                        // Should show another Gossip text with "Congratulations..."
+                        player->PlayerTalkClass->SendCloseGossip();
+                    }
+                }
+                break;
         }
-        else
-            player->PlayerTalkClass->SendCloseGossip();
         return true;
     }
 };
