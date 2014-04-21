@@ -5982,13 +5982,24 @@ float Player::GetRatingMultiplier(CombatRating cr) const
 
     if (level > GT_MAX_LEVEL)
         level = GT_MAX_LEVEL;
+    else if (level < 60) // pre 2.1 rating scaling :)
+    {
+        if (level < 10)
+            level = 10;
+        if (cr == CR_DEFENSE_SKILL)
+            return (52.0f / (1.5f * float(level - 8)));
+        else if (cr == CR_DODGE)
+            return (52.0f / (12.0f * float(level - 8)));
+        else if (cr == CR_PARRY)
+            return (52.0f / (20.0f * float(level - 8)));
+        else if (cr == CR_BLOCK)
+            return (52.0f / (5.0f * float(level - 8)));
+    }
 
-    GtCombatRatingsEntry const* Rating = sGtCombatRatingsStore.LookupEntry(cr*GT_MAX_LEVEL+level-1);
-    // gtOCTClassCombatRatingScalarStore.dbc starts with 1, CombatRating with zero, so cr+1
     GtOCTClassCombatRatingScalarEntry const* classRating = sGtOCTClassCombatRatingScalarStore.LookupEntry((getClass()-1)*GT_MAX_RATING+cr+1);
+    GtCombatRatingsEntry const* Rating = sGtCombatRatingsStore.LookupEntry(cr*GT_MAX_LEVEL+level-1);
     if (!Rating || !classRating)
-        return 1.0f;                                        // By default use minimum coefficient (not must be called)
-
+        return 1.0f;
     return classRating->ratio / Rating->ratio;
 }
 
