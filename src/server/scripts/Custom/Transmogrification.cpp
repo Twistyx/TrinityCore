@@ -9,7 +9,7 @@ const char * Transmogrification::GetSlotName(uint8 slot, WorldSession* /*session
     {
     case EQUIPMENT_SLOT_HEAD      : return  "Head";      // session->GetTrinityString(LANG_SLOT_NAME_HEAD);
     case EQUIPMENT_SLOT_SHOULDERS : return  "Shoulders"; // session->GetTrinityString(LANG_SLOT_NAME_SHOULDERS);
-    case EQUIPMENT_SLOT_BODY      : return  "Shirt";     // session->GetTrinityString(LANG_SLOT_NAME_BODY);
+    //case EQUIPMENT_SLOT_BODY      : return  "Shirt";     // session->GetTrinityString(LANG_SLOT_NAME_BODY);
     case EQUIPMENT_SLOT_CHEST     : return  "Chest";     // session->GetTrinityString(LANG_SLOT_NAME_CHEST);
     case EQUIPMENT_SLOT_WAIST     : return  "Waist";     // session->GetTrinityString(LANG_SLOT_NAME_WAIST);
     case EQUIPMENT_SLOT_LEGS      : return  "Legs";      // session->GetTrinityString(LANG_SLOT_NAME_LEGS);
@@ -392,14 +392,14 @@ bool Transmogrification::CanTransmogrifyItemWithItem(Player* player, ItemTemplat
 
     if (proto1->ItemId == proto2->ItemId)
         return false;
-
     if (!SuitableForTransmogrification(player, proto2) || !SuitableForTransmogrification(player, proto1)) // if (!transmogrified->CanTransmogrify() || !transmogrifier->CanBeTransmogrified())
         return false;
-
     if (proto1->InventoryType == INVTYPE_BAG ||
         proto1->InventoryType == INVTYPE_RELIC ||
-        // proto1->InventoryType == INVTYPE_BODY ||
+        proto1->InventoryType == INVTYPE_HEAD ||
+        proto1->InventoryType == INVTYPE_TABARD ||
         proto1->InventoryType == INVTYPE_FINGER ||
+        proto1->InventoryType == INVTYPE_BODY ||
         proto1->InventoryType == INVTYPE_TRINKET ||
         proto1->InventoryType == INVTYPE_AMMO ||
         proto1->InventoryType == INVTYPE_QUIVER)
@@ -409,11 +409,43 @@ bool Transmogrification::CanTransmogrifyItemWithItem(Player* player, ItemTemplat
     if (proto1->Class != proto2->Class)
         return false;
 
-    if (proto1->SubClass != proto2->SubClass)
+    if (proto1->Class == ITEM_CLASS_ARMOR && proto1->SubClass > ITEM_SUBCLASS_ARMOR_MISC && proto1->SubClass < ITEM_SUBCLASS_ARMOR_BUCKLER && proto1->InventoryType != INVTYPE_CLOAK)
     {
-        if (proto1->Class == ITEM_CLASS_ARMOR && !AllowMixedArmorTypes)
-            return false;
-        if (proto1->Class == ITEM_CLASS_WEAPON && !(IsRangedWeapon(proto2->Class, proto2->SubClass) && IsRangedWeapon(proto1->Class, proto1->SubClass)) && !AllowMixedWeaponTypes)
+        switch (player->getClass())
+        {
+            case CLASS_WARRIOR:
+            case CLASS_PALADIN:
+            case CLASS_DEATH_KNIGHT:
+            {
+                if (proto1->SubClass != ITEM_SUBCLASS_ARMOR_MAIL)
+                    return false;
+                break;
+            }
+            case CLASS_HUNTER:
+            case CLASS_SHAMAN:
+            case CLASS_ROGUE:
+            case CLASS_DRUID:
+            {
+                if (proto1->SubClass != ITEM_SUBCLASS_ARMOR_LEATHER)
+                    return false;
+                break;
+            }
+            case CLASS_MAGE:
+            case CLASS_PRIEST:
+            case CLASS_WARLOCK:
+            {
+                if (proto1->SubClass != ITEM_SUBCLASS_ARMOR_CLOTH)
+                    return false;
+                break;
+            }
+            default:
+                break;
+        }
+    }
+
+    if (proto1->Class == ITEM_CLASS_WEAPON && proto1->SubClass != proto2->SubClass)
+    {
+        if (!(IsRangedWeapon(proto2->Class, proto2->SubClass) && IsRangedWeapon(proto1->Class, proto1->SubClass)) && !AllowMixedWeaponTypes)
             return false;
     }
 
