@@ -720,25 +720,222 @@ public:
     }
 };
 
+#define GOSSIP_OPTION_HELLO_MENU 300
+#define GOSSIP_OPTION_SHOWRACIALS 600
+#define GOSSIP_OPTION_LEARNRACIALS 900
 class npc_talent : public CreatureScript
 {
 public:
     npc_talent() : CreatureScript("npc_talent"){ }
  
+    typedef struct  s_racialSpell
+    {
+        uint16      id;
+        std::string iconName;
+    }               racialSpell;
+
+    void Human(bool learn, Player* player)
+    {
+        const uint16 spells[6] = { 59752, 20599, 20598, 58985, 20597, 20864 };
+
+        if (learn)
+        {
+            learnRacials(spells, player);
+        }
+        else
+        {
+            const char *icons[6] = { "spell_shadow_charm", "inv_misc_note_02", "inv_enchant_shardbrilliantsmall", "spell_nature_sleep", "ability_meleedamage", "inv_hammer_05" };
+            showDetails(spells, icons, player, RACE_HUMAN);
+        }
+    }
+    void Orc(bool learn, Player* player)
+    {
+        const uint16 spells[6] = { 20575, 33697, 20573, 20574, 0, 0 };
+
+        if (learn)
+            learnRacials(spells, player);
+        else
+        {
+            const char *icons[6] = { "ability_warrior_warcry", "racial_orc_berserkerstrength", "inv_helmet_23", "inv_axe_02", "", "" };
+            showDetails(spells, icons, player, RACE_ORC);
+        }        
+    }
+    void Dwarf(bool learn, Player* player)
+    {
+        const uint16 spells[6] = { 2481, 20594, 20596, 20595, 59224 };
+
+        if (learn)
+            learnRacials(spells, player);
+        else
+        {
+            const char *icons[6] = { "racial_dwarf_findtreasure", "spell_shadow_unholystrength", "spell_frost_wizardmark", "inv_musket_03", "inv_hammer_05", "" };
+            showDetails(spells, icons, player, RACE_DWARF);
+        }        
+    }
+    void Nightelf(bool learn, Player* player)
+    {
+        const uint16 spells[6] = { 58984, 20585, 21009, 20582, 20551 };
+
+        if (learn)
+            learnRacials(spells, player);
+        else
+        {
+            const char *icons[6] = { "ability_ambush", "spell_nature_wispsplode", "ability_racial_ultravision", "ability_racial_shadowmeld", "spell_nature_spiritarmor", "" };
+            showDetails(spells, icons, player, RACE_NIGHTELF);
+        }        
+    }
+    void Undead(bool learn, Player* player)
+    {
+        const uint16 spells[6] = { 20577, 20579, 5227, 7744, 0, 0 };
+
+        if (learn)
+            learnRacials(spells, player);
+        else
+        {
+            const char *icons[6] = { "ability_racial_cannibalize", "spell_shadow_detectinvisibility", "spell_shadow_demonbreath", "spell_shadow_raisedead", "", "" };
+            showDetails(spells, icons, player, RACE_UNDEAD_PLAYER);
+        }        
+    }
+    void Tauren(bool learn, Player* player)
+    {
+        const uint16 spells[6] = { 20549, 20552, 20550, 20551, 0, 0 };
+
+        if (learn)
+            learnRacials(spells, player);
+        else
+        {
+            const char *icons[6] = { "ability_warstomp", "inv_misc_flower_01", "spell_nature_unyeildingstamina", "spell_nature_spiritarmor", "", "" };
+            showDetails(spells, icons, player, RACE_TAUREN);
+        }        
+    }
+    void Gnome(bool learn, Player* player)
+    {
+        const uint16 spells[6] = { 20589, 20591, 20592, 20593, 0, 0 };
+
+        if (learn)
+            learnRacials(spells, player);
+        else
+        {
+            const char *icons[6] = { "ability_rogue_trip", "inv_enchant_essenceeternallarge", "spell_nature_wispsplode", "inv_misc_gear_01", "", "" };
+            showDetails(spells, icons, player, RACE_GNOME);
+        }        
+    }
+    void Troll(bool learn, Player* player)
+    {
+        const uint16 spells[6] = { 26297, 58943, 20555, 26290, 20558, 20557 };
+        if (learn)
+            learnRacials(spells, player);
+        else
+        {
+            const char *icons[6] = { "racial_troll_berserk", "inv_misc_idol_02", "spell_nature_regenerate", "inv_weapon_bow_12", "inv_throwingaxe_03", "inv_misc_pelt_bear_ruin_02" };
+            showDetails(spells, icons, player, RACE_TROLL);
+        }
+        
+    }
+    void Draenai(bool learn, Player* player)
+    {
+        const uint16 spells[6] = { 59542, 28878, 20579, 0, 0, 0 };
+        if (learn)
+            learnRacials(spells, player);
+        else
+        {
+            const char *icons[6] = { "spell_holy_holyprotection", "inv_helmet_21", "spell_shadow_detectinvisibility", "", "", "" };
+            showDetails(spells, icons, player, RACE_DRAENEI);
+        }
+    }
+    void Bloodelf(bool learn, bool rogue, Player* player)
+    {
+        const uint16 spells[6] = { 28730, 822, 0, 0, 0, 0 };
+        const uint16 spellsRogue[6] = { 25046, 822, 0, 0, 0, 0 };
+        if (learn)
+            learnRacials((rogue) ? spellsRogue : spells, player);
+        else
+        {
+            const char *icons[6] = { "spell_shadow_teleport", "spell_shadow_antimagicshell", "", "", "", "" };
+            showDetails((rogue) ? spellsRogue : spells, icons, player, RACE_BLOODELF);
+        }
+    }
+
+    void learnRacials(const uint16 spells[6], Player* player)
+    {
+        int i = 6;
+        while (i)
+        {
+            i--;
+            if (spells[i])
+                player->learnSpell(spells[i], false);
+        }
+        player->learnSpell(81, false);
+    }
+
+    void showDetails(const uint16 spells[6], const char *icons[6], Player* player, uint32 race)
+    {
+        int i = 6;
+        while (i)
+        {
+            i--;
+            if (spells[i])
+            {
+                std::ostringstream ss;
+                ss << "|TInterface/ICONS/" << icons[i] << ":24:24:0:0|t";
+                ss << sSpellMgr->GetSpellInfo(spells[i])->SpellName[0];
+                if (spells[i] == 59542)
+                    ss << " (Nerfed by 50%)";
+                player->ADD_GOSSIP_ITEM(GOSSIP_ICON_TRAINER, ss.str().c_str(), race, GOSSIP_OPTION_HELLO_MENU);
+            }
+        }
+        player->ADD_GOSSIP_ITEM_EXTENDED(GOSSIP_ICON_TRAINER, "Learn those racials !", race, GOSSIP_OPTION_LEARNRACIALS, "Are you sure you can't go back !", 0, false);
+        player->ADD_GOSSIP_ITEM(GOSSIP_ICON_TRAINER, "...Go back to the list", GOSSIP_SENDER_MAIN, GOSSIP_OPTION_HELLO_MENU);
+    }
+
+    void listRaces(Player* player)
+    {
+        const char *msg[MAX_RACES] =
+        {
+            "",
+            "|TInterface/ICONS/inv_misc_tournaments_banner_human:24:24:0:0|tShow me the Human racials",
+            "|TInterface/ICONS/inv_misc_tournaments_banner_orc:24:24:0:0|tShow me the Orc racials",
+            "|TInterface/ICONS/inv_misc_tournaments_banner_dwarf:24:24:0:0|tShow me the Dwarf racials",
+            "|TInterface/ICONS/inv_misc_tournaments_banner_nightelf:24:24:0:0|tShow me the Nightelf racials",
+            "|TInterface/ICONS/inv_misc_tournaments_banner_scourge:24:24:0:0|tShow me the Undead racials",
+            "|TInterface/ICONS/inv_misc_tournaments_banner_tauren:24:24:0:0|tShow me the Tauren racials",
+            "|TInterface/ICONS/inv_misc_tournaments_banner_gnome:24:24:0:0|tShow me the Gnome racials",
+            "|TInterface/ICONS/inv_misc_tournaments_banner_troll:24:24:0:0|tShow me the Troll racials",
+            "", // gobelins
+            "|TInterface/ICONS/inv_misc_tournaments_banner_bloodelf:24:24:0:0|tShow me the Bloodelf racials",
+            "|TInterface/ICONS/inv_misc_tournaments_banner_draenei:24:24:0:0|tShow me the Draenei racials"
+        };
+        for (uint8 i = RACE_NONE; i < MAX_RACES; ++i)
+        {
+            if (sObjectMgr->GetPlayerInfo(i, player->getClass()))
+                player->ADD_GOSSIP_ITEM(GOSSIP_ICON_TRAINER, msg[i], i, GOSSIP_OPTION_SHOWRACIALS);
+        }
+    }
+
     bool OnGossipHello(Player* player, Creature* creature)
     {
-        if (creature->IsQuestGiver())
-            player->PrepareQuestMenu(creature->GetGUID());
-        if (creature->IsTrainer())
-            player->ADD_GOSSIP_ITEM(GOSSIP_ICON_TRAINER, "Train me !", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_TRAIN);
-        if (player->GetSpecsCount() == 1)
-            player->ADD_GOSSIP_ITEM_EXTENDED(GOSSIP_ICON_TRAINER, "Learn Dual Spec", GOSSIP_SENDER_MAIN, GOSSIP_OPTION_LEARNDUALSPEC, "Are you sure you want to pay this much ?", 100000, false);
-        player->ADD_GOSSIP_ITEM(GOSSIP_ICON_TRAINER, "Reset my talents.", GOSSIP_SENDER_MAIN, GOSSIP_OPTION_UNLEARNTALENTS);
+        if (!player)
+            return false;
+        if (!creature)
+            return false;
+
+        if (!player->HasSpell(81))
+            listRaces(player);
+        else
+        {
+            if (creature->IsQuestGiver())
+                player->PrepareQuestMenu(creature->GetGUID());
+            if (creature->IsTrainer())
+                player->ADD_GOSSIP_ITEM(GOSSIP_ICON_TRAINER, "Train me !", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_TRAIN);
+            if (player->GetSpecsCount() == 1)
+                player->ADD_GOSSIP_ITEM_EXTENDED(GOSSIP_ICON_TRAINER, "Learn Dual Spec", GOSSIP_SENDER_MAIN, GOSSIP_OPTION_LEARNDUALSPEC, "Are you sure you want to pay this much ?", 100000, false);
+            player->ADD_GOSSIP_ITEM(GOSSIP_ICON_TRAINER, "Reset my talents.", GOSSIP_SENDER_MAIN, GOSSIP_OPTION_UNLEARNTALENTS);
+        }
         player->SEND_GOSSIP_MENU(1, creature->GetGUID());
         return true;
     }
  
-    bool OnGossipSelect(Player* player, Creature* creature, uint32 /*uiSender*/, uint32 action)
+    bool OnGossipSelect(Player* player, Creature* creature, uint32 data, uint32 action)
     {
         player->PlayerTalkClass->ClearMenus();
         switch (action)
@@ -773,6 +970,57 @@ public:
                     }
                 }
                 break;
+            case GOSSIP_OPTION_HELLO_MENU:
+            {
+                OnGossipHello(player, creature);
+                break;
+            }
+            case GOSSIP_OPTION_SHOWRACIALS:
+            case GOSSIP_OPTION_LEARNRACIALS:
+            {
+                switch (data)
+                {
+                    case RACE_HUMAN:
+                        Human((action == GOSSIP_OPTION_LEARNRACIALS), player);
+                        break;
+                    case RACE_ORC:
+                        Orc((action == GOSSIP_OPTION_LEARNRACIALS), player);
+                        break;
+                    case RACE_DWARF:
+                        Dwarf((action == GOSSIP_OPTION_LEARNRACIALS), player);
+                        break;
+                    case RACE_NIGHTELF:
+                        Nightelf((action == GOSSIP_OPTION_LEARNRACIALS), player);
+                        break;
+                    case RACE_UNDEAD_PLAYER:
+                        Undead((action == GOSSIP_OPTION_LEARNRACIALS), player);
+                        break;
+                    case RACE_TAUREN:
+                        Tauren((action == GOSSIP_OPTION_LEARNRACIALS), player);
+                        break;
+                    case RACE_GNOME:
+                        Gnome((action == GOSSIP_OPTION_LEARNRACIALS), player);
+                        break;
+                    case RACE_TROLL:
+                        Troll((action == GOSSIP_OPTION_LEARNRACIALS), player);
+                        break;
+                    case RACE_BLOODELF:
+                        Bloodelf((action == GOSSIP_OPTION_LEARNRACIALS), (player->getClass() == CLASS_ROGUE), player);
+                        break;
+                    case RACE_DRAENEI:
+                        Draenai((action == GOSSIP_OPTION_LEARNRACIALS), player);
+                        break;
+                }
+                if (action != GOSSIP_OPTION_LEARNRACIALS)
+                    player->SEND_GOSSIP_MENU(1, creature->GetGUID());
+                else
+                {
+
+                    player->PlayerTalkClass->SendCloseGossip();
+                    player->CLOSE_GOSSIP_MENU();
+                }
+                break;
+            }
         }
         return true;
     }
