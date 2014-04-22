@@ -2101,6 +2101,46 @@ bool Aura::CallScriptEffectPeriodicHandlers(AuraEffect const* aurEff, AuraApplic
         (*scritr)->_FinishScriptCall();
     }
 
+    switch (GetId())
+    {
+        case 65418:
+        {
+            Unit* target = aurApp->GetTarget();
+            if (target)
+                target->CastSpell(target, 65410, true);
+            break;
+        }
+        case 65419:
+        {
+            Unit* target = aurApp->GetTarget();
+            if (target)
+                target->CastSpell(target, 65416, true);
+            break;
+        }
+        case 65420:
+        {
+            Unit* target = aurApp->GetTarget();
+            if (target)
+                target->CastSpell(target, 65412, true);
+            break;
+        }
+        case 65421:
+        {
+            Unit* target = aurApp->GetTarget();
+            if (target)
+                target->CastSpell(target, 65415, true);
+            break;
+        }
+        case 65422:
+        {
+            Unit* target = aurApp->GetTarget();
+            if (target)
+                target->CastSpell(target, 65414, true);
+            break;
+        }
+        default:
+            break;
+    }
     return preventDefault;
 }
 

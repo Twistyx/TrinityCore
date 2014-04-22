@@ -413,12 +413,25 @@ int32 SpellEffectInfo::CalcValue(Unit const* caster, int32 const* bp, Unit const
     if (caster)
     {
         int32 level = int32(caster->getLevel());
-        if (level > int32(_spellInfo->MaxLevel) && _spellInfo->MaxLevel > 0)
-            level = int32(_spellInfo->MaxLevel);
-        else if (level < int32(_spellInfo->BaseLevel))
-            level = int32(_spellInfo->BaseLevel);
-        level -= int32(_spellInfo->SpellLevel);
-        basePoints += int32(level * basePointsPerLevel);
+        switch (_spellInfo->Id)
+        {
+            case 65410: // Well Fed Haste and Stamina
+            case 65412: // Well Fed Spell Power and Stamina
+            case 65414: // Well Fed Attack power and Stamina
+            case 65415: // Well Fed Spirit and Stamina
+            case 65416: // Well Fed Hit Rating and Stamina
+            case 66623: // Well Fed Attack power, Spell power and Stamina
+                basePoints += int32(std::max((level - 15), 0) * basePointsPerLevel);
+                break;
+            default:
+                if (level > int32(_spellInfo->MaxLevel) && _spellInfo->MaxLevel > 0)
+                    level = int32(_spellInfo->MaxLevel);
+                else if (level < int32(_spellInfo->BaseLevel))
+                    level = int32(_spellInfo->BaseLevel);
+                level -= int32(_spellInfo->SpellLevel);
+                basePoints += int32(level * basePointsPerLevel);
+                break;
+        }
     }
 
     // roll in a range <1;EffectDieSides> as of patch 3.3.3
@@ -1256,6 +1269,7 @@ bool SpellInfo::IsAuraExclusiveBySpecificWith(SpellInfo const* spellInfo) const
         case SPELL_SPECIFIC_WARRIOR_ENRAGE:
         case SPELL_SPECIFIC_MAGE_ARCANE_BRILLANCE:
         case SPELL_SPECIFIC_PRIEST_DIVINE_SPIRIT:
+        case SPELL_SPECIFIC_WELL_FED:
             return spellSpec1 == spellSpec2;
         case SPELL_SPECIFIC_FOOD:
             return spellSpec2 == SPELL_SPECIFIC_FOOD
@@ -1909,6 +1923,8 @@ SpellSpecificType SpellInfo::GetSpellSpecific() const
             // scrolls effects
             else
             {
+                if (AttributesEx2 & SPELL_ATTR2_FOOD_BUFF)
+                    return SPELL_SPECIFIC_WELL_FED;
                 for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
                 {
                     if (!Effects[i].TriggerSpell)
@@ -1918,7 +1934,7 @@ SpellSpecificType SpellInfo::GetSpellSpecific() const
                         case 11008:
                         case 11009:
                         case 43961:
-                            return SPELL_SPECIFIC_FOOD_AND_DRINK;
+                            return SPELL_SPECIFIC_WELL_FED;
                         default:
                             break;
                     }
