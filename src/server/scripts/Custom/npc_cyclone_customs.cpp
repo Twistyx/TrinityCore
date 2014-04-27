@@ -499,9 +499,6 @@ public:
     {
         npc_gamonAI(Creature* creature) : ScriptedAI(creature) {}
 
-        void UpdateAI(uint32 diff) OVERRIDE
-        {
-        }
 
         void ReceiveEmote(Player* player, uint32 emote) OVERRIDE
         {
@@ -919,9 +916,16 @@ public:
         if (!creature)
             return false;
 
-        if (!player->HasSpell(81))
-            listRaces(player);
-        else
+        if (player->HasSpell(59752) ||
+            player->HasSpell(20575) ||
+            player->HasSpell(2481)  ||
+            player->HasSpell(58984) ||
+            player->HasSpell(20577) ||
+            player->HasSpell(20549) ||
+            player->HasSpell(20589) ||
+            player->HasSpell(26297) ||
+            player->HasSpell(59542) ||
+            player->HasSpell(822))
         {
             if (creature->IsQuestGiver())
                 player->PrepareQuestMenu(creature->GetGUID());
@@ -931,6 +935,8 @@ public:
                 player->ADD_GOSSIP_ITEM_EXTENDED(GOSSIP_ICON_TRAINER, "Learn Dual Spec", GOSSIP_SENDER_MAIN, GOSSIP_OPTION_LEARNDUALSPEC, "Are you sure you want to pay this much ?", 100000, false);
             player->ADD_GOSSIP_ITEM(GOSSIP_ICON_TRAINER, "Reset my talents.", GOSSIP_SENDER_MAIN, GOSSIP_OPTION_UNLEARNTALENTS);
         }
+        else
+            listRaces(player);
         player->SEND_GOSSIP_MENU(1, creature->GetGUID());
         return true;
     }
