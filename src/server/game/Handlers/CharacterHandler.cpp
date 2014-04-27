@@ -1946,24 +1946,12 @@ void WorldSession::HandleCharFactionOrRaceChange(WorldPacket& recvData)
 
             stmt = CharacterDatabase.GetPreparedStatement(CHAR_INS_PLAYER_HOMEBIND);
             stmt->setUInt32(0, lowGuid);
-            if (team == TEAM_ALLIANCE)
-            {
-                stmt->setUInt16(1, 1);
-                stmt->setUInt16(2, 1638);
-                stmt->setFloat (3, -1048.650024f);
-                stmt->setFloat (4, -304.483002f);
-                stmt->setFloat (5, 159.029999f);
-                Player::SavePositionInDB(1, -1048.650024f, -304.483002f, 159.029999f, 1.76f, 1638, lowGuid);
-            }
-            else
-            {
-                stmt->setUInt16(1, 1);
-                stmt->setUInt16(2, 1638);
-                stmt->setFloat (3, -1473.9f);
-                stmt->setFloat (4, -79.327f);
-                stmt->setFloat (5, 161.556870f);
-                Player::SavePositionInDB(1, -1473.9f, -79.327f, 161.556870f, 5.77f, 1638, lowGuid);
-            }
+            stmt->setUInt16(1, 0);
+            stmt->setUInt16(2, 33);
+            stmt->setFloat (3, -11339.845703f);
+            stmt->setFloat (4, -211.541397f);
+            stmt->setFloat (5, 75.220398f);
+            Player::SavePositionInDB(0, -11339.845f, -211.5414f, 75.2204f, 0.47f, 33, lowGuid);
             trans->Append(stmt);
 
             // Achievement conversion
