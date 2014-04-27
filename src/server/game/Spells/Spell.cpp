@@ -2552,7 +2552,10 @@ void Spell::DoAllEffectOnTarget(TargetInfo* target)
         {
             caster->ProcDamageAndSpell(unitTarget, procAttacker, procVictim, procEx, damageInfo.damage, m_attackType, m_spellInfo, m_triggeredByAuraSpell);
             if (caster->GetTypeId() == TYPEID_PLAYER && (m_spellInfo->Attributes & SPELL_ATTR0_STOP_ATTACK_TARGET) == 0
-                && m_spellInfo->Id != 25742 && m_spellInfo->Id != 18206 && missInfo == SPELL_MISS_NONE)
+                && m_spellInfo->Id != 25742 // 
+                && m_spellInfo->Id != 1766  // Kick
+                && m_spellInfo->Id != 72    // Shield bash
+                && m_spellInfo->Id != 18206 && missInfo == SPELL_MISS_NONE)
                 caster->ToPlayer()->CastItemCombatSpell(unitTarget, m_attackType, procVictim, procEx);
         }
     }
