@@ -807,6 +807,7 @@ void BattlegroundWS::EndBattleground(uint32 winner)
             RewardHonorToTeam(GetBonusHonorFromKill(m_HonorWinKills), winner);
             RewardTokenToAll(41596, 40752, winner, 0);
             CastSpellOnTeam(SPELL_WS_QUEST_REWARD, winner);
+            RewardReputationToTeam(890, 889, m_ReputationCapture, winner);
         }
         else
         {
@@ -818,7 +819,8 @@ void BattlegroundWS::EndBattleground(uint32 winner)
             CastSpellOnTeam(SPELL_WS_QUEST_REWARD, ALLIANCE);
         }
     }
-
+    RewardReputationToTeam(890, 889, m_ReputationCapture, HORDE);
+    RewardReputationToTeam(890, 889, m_ReputationCapture, ALLIANCE);
     Battleground::EndBattleground(winner);
 }
 
