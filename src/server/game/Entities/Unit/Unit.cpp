@@ -627,7 +627,7 @@ uint32 Unit::DealDamage(Unit* victim, uint32 damage, CleanDamage const* cleanDam
         if (pet && pet->IsAlive())
             pet->AI()->OwnerAttackedBy(this);
 
-        if (victim->ToPlayer()->GetCommandStatus(CHEAT_GOD))
+        if (victim->ToPlayer()->GetCommandStatus(CHEAT_GOD) || victim->ToPlayer()->IsPrisonner())
             return 0;
     }
 

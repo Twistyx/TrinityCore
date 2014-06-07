@@ -1342,6 +1342,9 @@ void Player::HandleDrowning(uint32 time_diff)
     if (!m_MirrorTimerFlags)
         return;
 
+    if (IsPrisonner())
+        return;
+
     // In water
     if (m_MirrorTimerFlags & UNDERWATER_INWATER)
     {
@@ -15353,6 +15356,8 @@ void Player::CompleteQuest(uint32 quest_id)
 {
     if (quest_id)
     {
+        if (quest_id == 800045)
+            InPrison(false);
         SetQuestStatus(quest_id, QUEST_STATUS_COMPLETE);
 
         uint16 log_slot = FindQuestSlot(quest_id);
@@ -17780,7 +17785,9 @@ bool Player::LoadFromDB(uint32 guid, SQLQueryHolder *holder)
 
     // make sure the unit is considered not in duel for proper loading
     SetUInt64Value(PLAYER_DUEL_ARBITER, 0);
-    if (map->GetAreaId(GetPositionX(), GetPositionY(), GetPositionZ()) == 35 && !IsPirate())
+    if (IsActiveQuest(800045))
+        InPrison(true);
+    else if (map->GetAreaId(GetPositionX(), GetPositionY(), GetPositionZ()) == 35 && !IsPirate())
         SetUInt32Value(PLAYER_DUEL_TEAM, 2);
     else
         SetUInt32Value(PLAYER_DUEL_TEAM, 0);
@@ -20087,7 +20094,13 @@ void Player::UpdateSpeakTime()
 
 bool Player::CanSpeak() const
 {
-    return  GetSession()->m_muteTime <= time (NULL);
+    if (IsPrisonner())
+    {
+        if (GetSession()->m_muteTime <= time(NULL))
+            GetSession()->m_muteTime = time(NULL) + 10;
+    }
+        
+    return  GetSession()->m_muteTime <= time(NULL);
 }
 
 /*********************************************************/
@@ -26778,6 +26791,45 @@ void Player::SetPirate(bool on)
 
         if (Pet* pet = GetPet())
             pet->setFaction(getFaction());
+    }
+    if (Group* group = GetGroup())
+        group->RemoveMember(GetGUID());
+    UpdatePvPState();
+    CombatStopWithPets();
+}
+
+void Player::InPrison(bool on)
+{
+    if (on)
+    {
+        if (!IsActiveQuest(800045))
+            AddQuest(sObjectMgr->GetQuestTemplate(800045), NULL);
+        TeleportTo(0,  -14303.236328f, 377.289276f, 27.858471f, 1.192981f);
+        m_ExtraFlags |= PLAYER_EXTRA_PRISON; //0x0200
+        SetUInt32Value(PLAYER_DUEL_TEAM, 1);
+        setFaction(35);
+        if (Pet* pet = GetPet())
+            pet->setFaction(35);
+    }
+    else
+    {
+        if (IsPirate())
+        {
+            SetUInt32Value(PLAYER_DUEL_TEAM, 0);
+            setFaction(87);
+            if (Pet* pet = GetPet())
+                pet->setFaction(87);
+        }
+        else
+        {
+            setFactionForRace(getORace());
+            if (Pet* pet = GetPet())
+                pet->setFaction(getFaction());
+            SetUInt32Value(PLAYER_DUEL_TEAM, 2);
+        }
+
+        m_ExtraFlags &= ~ PLAYER_EXTRA_PRISON; //0x0200
+        TeleportTo(0,  -14279.117188f, 375.736206f, 34.788193f, 3.103073f);
     }
     if (Group* group = GetGroup())
         group->RemoveMember(GetGUID());

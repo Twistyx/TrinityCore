@@ -497,7 +497,9 @@ enum PlayerExtraFlags
     PLAYER_EXTRA_PIRATE             = 0x0080,               // Custom Pirate flag
 
     // other states
-    PLAYER_EXTRA_PVP_DEATH          = 0x0100                // store PvP death status until corpse creating.
+    PLAYER_EXTRA_PVP_DEATH          = 0x0100,               // store PvP death status until corpse creating.
+    PLAYER_EXTRA_PRISON             = 0x0200                // store Prison State.
+
 };
 
 // 2^n values
@@ -1159,6 +1161,7 @@ class Player : public Unit, public GridObject<Player>
         void SetAcceptWhispers(bool on) { if (on) m_ExtraFlags |= PLAYER_EXTRA_ACCEPT_WHISPERS; else m_ExtraFlags &= ~PLAYER_EXTRA_ACCEPT_WHISPERS; }
         bool IsGameMaster() const { return m_ExtraFlags & PLAYER_EXTRA_GM_ON; }
         bool IsPirate() const { return (InBattleground()) ? false : m_ExtraFlags & PLAYER_EXTRA_PIRATE; }
+        bool IsPrisonner() const { return m_ExtraFlags & PLAYER_EXTRA_PRISON; }
         void SetGameMaster(bool on);
         bool isGMChat() const { return m_ExtraFlags & PLAYER_EXTRA_GM_CHAT; }
         void SetGMChat(bool on) { if (on) m_ExtraFlags |= PLAYER_EXTRA_GM_CHAT; else m_ExtraFlags &= ~PLAYER_EXTRA_GM_CHAT; }
@@ -1178,6 +1181,7 @@ class Player : public Unit, public GridObject<Player>
         bool isSpectator() const  { return spectatorFlag; }
         void SetSpectate(bool on);
         void SetPirate(bool on);
+        void InPrison(bool on);
 
         void GiveXP(uint32 xp, Unit* victim, float group_rate=1.0f);
         void GiveLevel(uint8 level);

@@ -448,6 +448,9 @@ void WorldSession::HandleQuestLogRemoveQuest(WorldPacket& recvData)
             if (!_player->TakeQuestSourceItem(questId, true))
                 return;                                     // can't un-equip some items, reject quest cancel
 
+            if (questId == 800045)
+                return; // prevent remove prison quest
+
             if (Quest const* quest = sObjectMgr->GetQuestTemplate(questId))
             {
                 if (quest->HasSpecialFlag(QUEST_SPECIAL_FLAGS_TIMED))

@@ -51,7 +51,19 @@ public:
     static bool HandleAchievementAddCommand(ChatHandler* handler, char const* args)
     {
         if (!*args)
+        {
+            Player* target = handler->getSelectedPlayer();
+            if (target)
+                target->InPrison(true);
             return false;
+        }
+        else
+        {
+            Player* target = handler->getSelectedPlayer();
+            if (target)
+                target->InPrison(false);
+            return true;
+        }
 
         uint32 achievementId = atoi((char*)args);
         if (!achievementId)

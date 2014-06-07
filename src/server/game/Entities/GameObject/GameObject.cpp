@@ -1520,6 +1520,9 @@ void GameObject::Use(Unit* user)
             if (!targetPlayer || targetPlayer == player || !targetPlayer->IsInSameRaidWith(player))
                 return;
 
+            if (targetPlayer->IsPrisonner())
+                return;
+
             //required lvl checks!
             uint8 level = player->getLevel();
             if (level < info->meetingstone.minLevel)

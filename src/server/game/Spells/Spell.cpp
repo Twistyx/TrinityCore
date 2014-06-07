@@ -4860,6 +4860,8 @@ SpellCastResult Spell::CheckCast(bool strict)
         }
         if (m_spellInfo->Id == 20589 && !m_caster->HasAuraWithMechanic((1<<MECHANIC_SNARE)|(1<<MECHANIC_ROOT)))
             return SPELL_FAILED_CANT_DO_THAT_RIGHT_NOW; // escape artist exception
+        if (m_caster->ToPlayer()->IsPrisonner() && (m_spellInfo->Id == 8690 || m_spellInfo->Id == 7355))
+            return SPELL_FAILED_NOT_HERE;
     }
 
     if (m_spellInfo->AttributesEx7 & SPELL_ATTR7_IS_CHEAT_SPELL && !m_caster->HasFlag(UNIT_FIELD_FLAGS_2, UNIT_FLAG2_ALLOW_CHEAT_SPELLS))
