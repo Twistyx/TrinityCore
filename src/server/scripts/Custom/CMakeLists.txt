@@ -20,8 +20,6 @@ set(scripts_STAT_SRCS
   Custom/Transmogrification.cpp
   Custom/Transmogrifier.cpp
   Custom/arena_spectator.cpp
-  Custom/vip_island.cpp
-  Custom/npc_teleporter_chest.cpp
 )
 
 message("  -> Prepared: Custom")
