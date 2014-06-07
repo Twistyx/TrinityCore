@@ -688,7 +688,7 @@ void AddSC_cs_world_chat();
 void AddSC_custom_immvp_scripts();
 void AddSC_CPWS_Transmogrification();
 void AddSC_arena_spectator_script();
-void AddSC_Vip_Access();
+
 #endif
 
 
@@ -1418,7 +1418,6 @@ void AddCustomScripts()
 	AddSC_cs_world_chat();
 	AddSC_CPWS_Transmogrification();
 	AddSC_arena_spectator_script();
-	AddSC_Vip_Access();
 #endif
 }
 
