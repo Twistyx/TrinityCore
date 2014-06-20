@@ -171,22 +171,33 @@ class spell_mage_cold_snap : public SpellScriptLoader
 
             void HandleDummy(SpellEffIndex /*effIndex*/)
             {
+                // temp solution for 39 only quick fix plz pimpit
                 Player* caster = GetCaster()->ToPlayer();
-                // immediately finishes the cooldown on Frost spells
-                const SpellCooldowns& cm = caster->GetSpellCooldownMap();
-                for (SpellCooldowns::const_iterator itr = cm.begin(); itr != cm.end();)
-                {
-                    SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(itr->first);
+                if (!caster) return;
+                caster->RemoveSpellCooldown(122, true);
+                caster->RemoveSpellCooldown(865, true);
+                caster->RemoveSpellCooldown(120, true);
+                caster->RemoveSpellCooldown(8492, true);
+                caster->RemoveSpellCooldown(6143, true);
+                caster->RemoveSpellCooldown(8461, true);
+                caster->RemoveSpellCooldown(45438, true);
+                caster->RemoveSpellCooldown(12472, true);
 
-                    if (spellInfo->SpellFamilyName == SPELLFAMILY_MAGE &&
-                        (spellInfo->GetSchoolMask() & SPELL_SCHOOL_MASK_FROST) &&
-                        spellInfo->Id != SPELL_MAGE_COLD_SNAP && spellInfo->GetRecoveryTime() > 0)
-                    {
-                        caster->RemoveSpellCooldown((itr++)->first, true);
-                    }
-                    else
-                        ++itr;
-                }
+                //this is horrible sorry
+                //// immediately finishes the cooldown on Frost spells
+                //SpellCooldowns *cm = caster->GetSpellCooldownMap();
+                //for (SpellCooldowns::const_iterator itr = cm.begin(); itr != cm.end();)
+                //{
+                //    SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(itr->first);
+                //    if (spellInfo->SpellFamilyName == SPELLFAMILY_MAGE &&
+                //        (spellInfo->GetSchoolMask() & SPELL_SCHOOL_MASK_FROST) &&
+                //        spellInfo->Id != SPELL_MAGE_COLD_SNAP && spellInfo->GetRecoveryTime() > 0)
+                //    {
+                //        caster->RemoveSpellCooldown((itr++)->first, true);
+                //    }
+                //    else
+                //        ++itr;
+                //}
             }
 
             void Register() OVERRIDE

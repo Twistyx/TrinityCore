@@ -319,32 +319,16 @@ class spell_rog_preparation : public SpellScriptLoader
             {
                 Player* caster = GetCaster()->ToPlayer();
 
-                //immediately finishes the cooldown on certain Rogue abilities
-                const SpellCooldowns& cm = caster->GetSpellCooldownMap();
-                for (SpellCooldowns::const_iterator itr = cm.begin(); itr != cm.end();)
-                {
-                    SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(itr->first);
-
-                    if (spellInfo->SpellFamilyName == SPELLFAMILY_ROGUE)
-                    {
-                        if (spellInfo->SpellFamilyFlags[1] & SPELLFAMILYFLAG1_ROGUE_COLDB_SHADOWSTEP ||      // Cold Blood, Shadowstep
-                            spellInfo->SpellFamilyFlags[0] & SPELLFAMILYFLAG_ROGUE_VAN_EVAS_SPRINT)           // Vanish, Evasion, Sprint
-                            caster->RemoveSpellCooldown((itr++)->first, true);
-                        else if (caster->HasAura(SPELL_ROGUE_GLYPH_OF_PREPARATION))
-                        {
-                            if (spellInfo->SpellFamilyFlags[1] & SPELLFAMILYFLAG1_ROGUE_DISMANTLE ||         // Dismantle
-                                spellInfo->SpellFamilyFlags[0] & SPELLFAMILYFLAG_ROGUE_KICK ||               // Kick
-                                (spellInfo->SpellFamilyFlags[0] & SPELLFAMILYFLAG_ROGUE_BLADE_FLURRY &&     // Blade Flurry
-                                spellInfo->SpellFamilyFlags[1] & SPELLFAMILYFLAG1_ROGUE_BLADE_FLURRY))
-                                caster->RemoveSpellCooldown((itr++)->first, true);
-                            else
-                                ++itr;
-                        }
-                        else
-                            ++itr;
-                    }
-                    else
-                        ++itr;
+                // Shitty fix, TODO : handle all ranks
+                caster->RemoveSpellCooldown(1856, true); // Vanish
+                caster->RemoveSpellCooldown(14177, true); // Cold Blood
+                caster->RemoveSpellCooldown(5277, true); // Evasion
+                caster->RemoveSpellCooldown(8696, true); // Sprint
+                caster->RemoveSpellCooldown(36554, true); // Shadow Step
+                if (caster->HasAura(SPELL_ROGUE_GLYPH_OF_PREPARATION)) {
+                    caster->RemoveSpellCooldown(51722, true); // Dismantle
+                    caster->RemoveSpellCooldown(1766, true); // Kick
+                    caster->RemoveSpellCooldown(13877, true); // Blade Flurry
                 }
             }
 
