@@ -22005,8 +22005,6 @@ void Player::SendCooldownEvent(SpellInfo const* spellInfo, uint32 itemId /*= 0*/
 void Player::UpdatePotionCooldown(Spell* spell)
 {
     // no potion used i combat or still in combat
-    if (!m_lastPotionId || IsInCombat())
-        return;
 
     // Call not from spell cast, send cooldown event for item spells if no in combat
     if (!spell)
