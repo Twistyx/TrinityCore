@@ -7669,8 +7669,11 @@ void Player::UpdateZone(uint32 newZone, uint32 newArea)
             TeleportTo(0, -11709.507812f, 1304.991577f, 1.0409f, GetOrientation());
             return;
         default:
-            TeleportTo(0, m_homebindX, m_homebindY, m_homebindZ, GetOrientation());
-            return;
+            if (!IsGameMaster()) {
+                TeleportTo(0, m_homebindX, m_homebindY, m_homebindZ, GetOrientation());
+                return;
+            }
+            break;
     }
 
     if (m_zoneUpdateId != newZone)
