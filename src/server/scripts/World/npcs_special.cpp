@@ -2023,51 +2023,40 @@ public:
     bool OnGossipHello(Player* player, Creature* creature) OVERRIDE
     {
         if (player->HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_NO_XP_GAIN))
-            player->ADD_GOSSIP_ITEM_EXTENDED(GOSSIP_ICON_CHAT, GOSSIP_XP_ON, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 2, "Are you sure you want to do this ?\nCost :", EXP_COST, false);
+        {
+            if ((player->getLevel() % 10) == 9)
+                player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Sorry next bracket isn't available yet !", GOSSIP_SENDER_MAIN, 0);
+            else
+                player->ADD_GOSSIP_ITEM_EXTENDED(GOSSIP_ICON_CHAT, GOSSIP_XP_ON, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 2, "Are you sure you want to start gaining XP again ?\nCost :", (EXP_COST / 10), false);
+        }
         else
-            player->ADD_GOSSIP_ITEM_EXTENDED(GOSSIP_ICON_CHAT, GOSSIP_XP_OFF, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1, "Are you sure you want to do this ?\nCost :", EXP_COST, false);
+            player->ADD_GOSSIP_ITEM_EXTENDED(GOSSIP_ICON_CHAT, GOSSIP_XP_OFF, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1, "Are you sure you want to stop gaining XP ?\nCost :", EXP_COST, false);
         player->PlayerTalkClass->SendGossipMenu(GOSSIP_TEXT_EXP, creature->GetGUID());
         return true;
+    }
+
+    void ToggleXP(Player* player, uint32 actualCost, bool noXPGain)
+    {
+        if (!player->HasEnoughMoney(actualCost))
+            player->SendBuyError(BUY_ERR_NOT_ENOUGHT_MONEY, 0, 0, 0);
+        else
+        {
+            player->ModifyMoney(-actualCost);
+            if (noXPGain)
+                player->RemoveFlag(PLAYER_FLAGS, PLAYER_FLAGS_NO_XP_GAIN);
+            else
+                player->SetFlag(PLAYER_FLAGS, PLAYER_FLAGS_NO_XP_GAIN);
+            player->UpdatePvP(!noXPGain);
+        }            
     }
 
     bool OnGossipSelect(Player* player, Creature* /*creature*/, uint32 /*sender*/, uint32 action) OVERRIDE
     {
         player->PlayerTalkClass->ClearMenus();
         bool noXPGain = player->HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_NO_XP_GAIN);
-        bool doSwitch = false;
 
-        switch (action)
-        {
-            case GOSSIP_ACTION_INFO_DEF + 1://xp off
-                {
-                    if (!noXPGain)//does gain xp
-                        doSwitch = true;//switch to don't gain xp
-                }
-                break;
-            case GOSSIP_ACTION_INFO_DEF + 2://xp on
-                {
-                    if (noXPGain)//doesn't gain xp
-                        doSwitch = true;//switch to gain xp
-                }
-                break;
-        }
-        if (doSwitch)
-        {
-            if (!player->HasEnoughMoney(EXP_COST))
-                player->SendBuyError(BUY_ERR_NOT_ENOUGHT_MONEY, 0, 0, 0);
-            else if (noXPGain)
-            {
-                player->ModifyMoney(-EXP_COST);
-                player->RemoveFlag(PLAYER_FLAGS, PLAYER_FLAGS_NO_XP_GAIN);
-                player->UpdatePvP(false);
-            }
-            else if (!noXPGain)
-            {
-                player->ModifyMoney(-EXP_COST);
-                player->SetFlag(PLAYER_FLAGS, PLAYER_FLAGS_NO_XP_GAIN);
-                player->UpdatePvP(true);
-            }
-        }
+        if ((action == GOSSIP_ACTION_INFO_DEF + 1) || (action == GOSSIP_ACTION_INFO_DEF + 2))
+            ToggleXP(player, (noXPGain ? (EXP_COST / 10) : EXP_COST), noXPGain);
         player->PlayerTalkClass->SendCloseGossip();
         return true;
     }

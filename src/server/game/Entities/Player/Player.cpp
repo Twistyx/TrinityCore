@@ -3180,6 +3180,32 @@ void Player::GiveLevel(uint8 level)
 
     SetLevel(level);
 
+    if ((level % 10) == 9) {
+        std::string stringLevel;
+        std::ostringstream msg;
+
+        switch (level)
+        {
+            case 19: stringLevel = "19"; break;
+            case 29: stringLevel = "29"; break;
+            case 39: stringLevel = "39"; break;
+            default: stringLevel = "OVER NINE THOUSAND !!!\?\?!!"; break;
+        }
+
+        SetFlag(PLAYER_FLAGS, PLAYER_FLAGS_NO_XP_GAIN);
+
+        SessionMap tmpSessions = sWorld->GetAllSessions();
+        for (SessionMap::iterator itr = tmpSessions.begin(); itr != tmpSessions.end(); ++itr)
+        {
+            Player* plr = itr->second->GetPlayer();
+
+            msg << "Gratz to |Hplayer:" << GetName() << "|h|cffFFFFFF" << GetName() << "|cffFFFFFF|h|r for reaching level ";
+            msg << stringLevel << " in " << (m_Played_time[PLAYED_TIME_TOTAL] / 3600) << "h" << ((m_Played_time[PLAYED_TIME_TOTAL] / 60) % 60) << " !";
+            if (plr)
+                sWorld->SendServerMessage(SERVER_MSG_STRING, msg.str().c_str(), plr);
+        }
+    }
+
     UpdateSkillsForLevel();
 
     // save base values (bonuses already included in stored stats
@@ -20366,7 +20392,7 @@ void Player::ResetContestedPvP()
 
 void Player::UpdatePvPFlag(time_t currTime)
 {
-    if (getLevel() == 19 || HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_NO_XP_GAIN))
+    if (HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_NO_XP_GAIN))
     {
         UpdatePvP(true);
         return;
@@ -21870,7 +21896,7 @@ void Player::UpdatePvPState(bool onlyFFA)
 
     if (pvpInfo.IsHostile || IsPirate())                               // in hostile area
     {
-        if ((getLevel() == 19) || HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_NO_XP_GAIN) || !IsPvP() || pvpInfo.EndTimer)
+        if (HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_NO_XP_GAIN) || !IsPvP() || pvpInfo.EndTimer)
             UpdatePvP(true, true);
     }
     else                                                    // in friendly area
@@ -21884,7 +21910,7 @@ void Player::SetPvP(bool state)
 {
     if (GetAreaId() == 35 && !IsPirate())
         SetUInt32Value(PLAYER_DUEL_TEAM, 2);
-    else if ((getLevel() == 19) || HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_NO_XP_GAIN))
+    else if (HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_NO_XP_GAIN))
         state = true;
     Unit::SetPvP(state);
     for (ControlList::iterator itr = m_Controlled.begin(); itr != m_Controlled.end(); ++itr)
