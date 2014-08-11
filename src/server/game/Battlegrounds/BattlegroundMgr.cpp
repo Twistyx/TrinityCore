@@ -1236,7 +1236,7 @@ uint32 BattlegroundMgr::GetTopArenaTeamByRank(const uint8 type, const uint8 rank
 
     // stop if invalid slot
     if (slot > MAX_SLOT)
-        return NULL;
+        return 0;
 
     const time_t currentTime = time(NULL);
     if (!m_nextUpdate[slot] || m_nextUpdate[slot] < currentTime)
