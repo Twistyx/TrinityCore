@@ -20,6 +20,7 @@ set(scripts_STAT_SRCS
   Custom/Transmogrification.cpp
   Custom/Transmogrifier.cpp
   Custom/arena_spectator.cpp
+  Custom/Reforging.cpp
 )
 
 message("  -> Prepared: Custom")
