@@ -818,9 +818,9 @@ void BattlegroundWS::EndBattleground(uint32 winner)
             CastSpellOnTeam(SPELL_WS_QUEST_REWARD, HORDE);
             CastSpellOnTeam(SPELL_WS_QUEST_REWARD, ALLIANCE);
         }
+        RewardReputationToTeam(890, 889, m_ReputationCapture, HORDE);
+        RewardReputationToTeam(890, 889, m_ReputationCapture, ALLIANCE);
     }
-    RewardReputationToTeam(890, 889, m_ReputationCapture, HORDE);
-    RewardReputationToTeam(890, 889, m_ReputationCapture, ALLIANCE);
     Battleground::EndBattleground(winner);
 }
 

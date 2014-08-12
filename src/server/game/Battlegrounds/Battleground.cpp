@@ -708,9 +708,6 @@ void Battleground::RewardTokenToAll(const uint32 /*token1*/, const uint32 /*toke
             if (player->HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_NO_XP_GAIN))
                 continue;
 
-            if (player->getLevel() == 19)
-                continue;
-
             if (player->getLevel() < 13)
                 player->AddItem(52000, count);
             else if (player->getLevel() > 15)
