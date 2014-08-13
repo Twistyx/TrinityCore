@@ -35,6 +35,9 @@
 #include <set>
 #include <list>
 
+#include <event.h>
+#include <evhttp.h>
+
 class Object;
 class WorldPacket;
 class WorldSession;
@@ -751,6 +754,8 @@ class World
 
         void ReloadRBAC();
 
+        void SendToWebserver(const char *param);
+
     protected:
         void _UpdateGameTime();
         // callback for UpdateRealmCharacters
@@ -850,6 +855,9 @@ class World
 
         void ProcessQueryCallbacks();
         ACE_Future_Set<PreparedQueryResult> m_realmCharCallbacks;
+
+        // Event pool
+        struct evhttp_connection *m_conn;
 };
 
 extern uint32 realmID;

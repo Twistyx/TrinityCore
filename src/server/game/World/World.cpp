@@ -93,6 +93,10 @@ int32 World::m_visibility_notify_periodOnContinents = DEFAULT_VISIBILITY_NOTIFY_
 int32 World::m_visibility_notify_periodInInstances  = DEFAULT_VISIBILITY_NOTIFY_PERIOD;
 int32 World::m_visibility_notify_periodInBGArenas   = DEFAULT_VISIBILITY_NOTIFY_PERIOD;
 
+
+// prototype callback for SendToWebserver
+void _ReqHandler(struct evhttp_request *req, void *state);
+
 /// World constructor
 World::World()
 {
@@ -119,6 +123,11 @@ World::World()
     m_isClosed = false;
 
     m_CleaningFlags = 0;
+
+    event_init();
+    m_conn = evhttp_connection_new("10.0.0.2", 80);
+    evhttp_connection_set_timeout(m_conn, 3);
+    SendToWebserver("/api/game/server/on/");
 }
 
 /// World destructor
@@ -3213,4 +3222,32 @@ void World::ReloadRBAC()
     for (SessionMap::const_iterator itr = m_sessions.begin(); itr != m_sessions.end(); ++itr)
         if (WorldSession* session = itr->second)
             session->InvalidateRBACData();
+}
+
+
+/**
+** Async event pool for http request to the webserver
+**/
+
+
+void _ReqHandler(struct evhttp_request *req, void *state)
+{
+    if (req == NULL)
+        std::cout << "<WebServer> - ERROR: timed out!\n";
+    else if (req->response_code == 0)
+        std::cout << "<WebServer> - ERROR: connection refused!\n";
+    else if (req->response_code != 200)
+        std::cout << "<WebServer> - ERROR: " << req->response_code << " - " << req->response_code_line << "\n";
+    event_loopexit(NULL);
+}
+
+void World::SendToWebserver(const char *param)
+{
+    struct evhttp_request *req;
+
+    req = evhttp_request_new(_ReqHandler, NULL);
+    evhttp_add_header(req->output_headers, "Host", "10.0.0.2");
+    evhttp_add_header(req->output_headers, "Content-Length", "0");
+    evhttp_make_request(m_conn, req, EVHTTP_REQ_POST, param);
+    event_dispatch();
 }

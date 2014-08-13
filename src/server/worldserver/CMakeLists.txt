@@ -172,6 +172,7 @@ target_link_libraries(worldserver
   Detour
   ${JEMALLOC_LIBRARY}
   ${READLINE_LIBRARY}
+  ${EVENT_LIBRARY}
   ${TERMCAP_LIBRARY}
   ${ACE_LIBRARY}
   ${MYSQL_LIBRARY}

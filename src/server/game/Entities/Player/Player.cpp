@@ -3183,6 +3183,9 @@ void Player::GiveLevel(uint8 level)
     if ((level % 10) == 9) {
         std::string stringLevel;
         std::ostringstream msg;
+        std::ostringstream url;
+        uint16 lvl_h = (m_Played_time[PLAYED_TIME_TOTAL] / 3600);
+        uint16 lvl_m = ((m_Played_time[PLAYED_TIME_TOTAL] / 60) % 60);
 
         switch (level)
         {
@@ -3193,17 +3196,19 @@ void Player::GiveLevel(uint8 level)
         }
 
         SetFlag(PLAYER_FLAGS, PLAYER_FLAGS_NO_XP_GAIN);
-
+        msg << "Gratz to |Hplayer:" << GetName() << "|h|cffFFFFFF" << GetName() << "|cffFFFFFF|h|r for reaching level ";
+        msg << stringLevel << " in " << lvl_h << "h" << lvl_m << " !";
         SessionMap tmpSessions = sWorld->GetAllSessions();
         for (SessionMap::iterator itr = tmpSessions.begin(); itr != tmpSessions.end(); ++itr)
         {
             Player* plr = itr->second->GetPlayer();
 
-            msg << "Gratz to |Hplayer:" << GetName() << "|h|cffFFFFFF" << GetName() << "|cffFFFFFF|h|r for reaching level ";
-            msg << stringLevel << " in " << (m_Played_time[PLAYED_TIME_TOTAL] / 3600) << "h" << ((m_Played_time[PLAYED_TIME_TOTAL] / 60) % 60) << " !";
             if (plr)
                 sWorld->SendServerMessage(SERVER_MSG_STRING, msg.str().c_str(), plr);
         }
+
+        url << "/api/game/levelup/" << GetName() << "/" << stringLevel << "/" << lvl_h << "/" << lvl_m << "/";
+        sWorld->SendToWebserver(url.str().c_str());
     }
 
     UpdateSkillsForLevel();
