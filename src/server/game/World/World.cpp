@@ -124,10 +124,10 @@ World::World()
 
     m_CleaningFlags = 0;
 
-    event_init();
-    m_conn = evhttp_connection_new("10.0.0.2", 80);
-    evhttp_connection_set_timeout(m_conn, 3);
-    SendToWebserver("/api/game/server/on/");
+    // event_init();
+    // m_conn = evhttp_connection_new("10.0.0.2", 80);
+    // evhttp_connection_set_timeout(m_conn, 3);
+    // SendToWebserver("/api/game/server/on/");
 }
 
 /// World destructor
