@@ -7661,19 +7661,30 @@ void Player::UpdateArea(uint32 newArea)
 
     // previously this was in UpdateZone (but after UpdateArea) so nothing will break
     pvpInfo.IsInNoPvPArea = false;
-    if (newArea == 35 && !IsPirate())
+    if (newArea == 35)
     {
-        SetUInt32Value(PLAYER_DUEL_TEAM, 2);
-        CombatStopWithPets();
-    }
-    else if (area && area->IsSanctuary())   // in sanctuary
-    {
-        SetByteFlag(UNIT_FIELD_BYTES_2, 1, UNIT_BYTE2_FLAG_SANCTUARY);
-        pvpInfo.IsInNoPvPArea = true;
-        CombatStopWithPets();
+        if (!IsPirate())
+        {
+            if (duel)
+                DuelComplete(DUEL_FLED);
+            SetUInt32Value(PLAYER_DUEL_TEAM, 2);
+            CombatStopWithPets();
+        }
     }
     else
-        RemoveByteFlag(UNIT_FIELD_BYTES_2, 1, UNIT_BYTE2_FLAG_SANCTUARY);
+    {
+        if (area && area->IsSanctuary())   // in sanctuary
+        {
+            SetByteFlag(UNIT_FIELD_BYTES_2, 1, UNIT_BYTE2_FLAG_SANCTUARY);
+            pvpInfo.IsInNoPvPArea = true;
+            CombatStopWithPets();
+        }
+        else
+            RemoveByteFlag(UNIT_FIELD_BYTES_2, 1, UNIT_BYTE2_FLAG_SANCTUARY);
+        if (!duel)
+            SetUInt32Value(PLAYER_DUEL_TEAM, 0);
+    }
+
     UpdatePvPState(true);
 }
 
@@ -7777,6 +7788,9 @@ void Player::UpdateZone(uint32 newZone, uint32 newArea)
 
     if (newArea == 35 && !IsPirate())                     // Is in a capital city
     {
+
+        if (duel)
+            DuelComplete(DUEL_FLED);
         SetUInt32Value(PLAYER_DUEL_TEAM, 2);
         SetFlag(PLAYER_FLAGS, PLAYER_FLAGS_RESTING);
         SetRestType(REST_TYPE_IN_CITY);
@@ -7785,6 +7799,8 @@ void Player::UpdateZone(uint32 newZone, uint32 newArea)
     }
     else
     {
+        if (!duel)
+            SetUInt32Value(PLAYER_DUEL_TEAM, 0);
         if (HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_RESTING))
         {
             if (GetRestType() == REST_TYPE_IN_TAVERN)        // Still inside a tavern or has recently left
@@ -17851,8 +17867,12 @@ bool Player::LoadFromDB(uint32 guid, SQLQueryHolder *holder)
     if (IsActiveQuest(800045))
         InPrison(true);
     else if (map->GetAreaId(GetPositionX(), GetPositionY(), GetPositionZ()) == 35 && !IsPirate())
+    {
+        if (duel)
+            DuelComplete(DUEL_FLED);
         SetUInt32Value(PLAYER_DUEL_TEAM, 2);
-    else
+    }
+    else if (!duel)
         SetUInt32Value(PLAYER_DUEL_TEAM, 0);
 
     return true;
@@ -21913,10 +21933,21 @@ void Player::UpdatePvPState(bool onlyFFA)
 
 void Player::SetPvP(bool state)
 {
-    if (GetAreaId() == 35 && !IsPirate())
-        SetUInt32Value(PLAYER_DUEL_TEAM, 2);
-    else if (HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_NO_XP_GAIN))
+    if (IsPirate())
         state = true;
+    else
+    {
+        if (GetAreaId() == 35)
+        {
+            if (duel)
+                DuelComplete(DUEL_FLED);
+            SetUInt32Value(PLAYER_DUEL_TEAM, 2);
+        }
+        else if (!duel)
+            SetUInt32Value(PLAYER_DUEL_TEAM, 0);
+        if (HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_NO_XP_GAIN))
+            state = true;
+    }
     Unit::SetPvP(state);
     for (ControlList::iterator itr = m_Controlled.begin(); itr != m_Controlled.end(); ++itr)
         (*itr)->SetPvP(state);
@@ -26835,6 +26866,8 @@ void Player::SetPirate(bool on)
     {
         if (IsPirate())
             return;
+        if (duel)
+            DuelComplete(DUEL_FLED);
         if (GetAreaId() == 35)
             SetUInt32Value(PLAYER_DUEL_TEAM, 0);
         m_ExtraFlags |= PLAYER_EXTRA_PIRATE;
@@ -26847,6 +26880,8 @@ void Player::SetPirate(bool on)
     {
         if (!IsPirate())
             return;
+        if (duel)
+            DuelComplete(DUEL_FLED);
         if (GetAreaId() == 35)
             SetUInt32Value(PLAYER_DUEL_TEAM, 2);
         m_ExtraFlags &= ~ PLAYER_EXTRA_PIRATE;
